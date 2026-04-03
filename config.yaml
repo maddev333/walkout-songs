@@ -1,0 +1,33 @@
+name: My Config
+version: 0.0.1
+schema: v1
+
+models:
+  - name: Bonsai-8B.gguf
+    provider: llama.cpp
+    model: Bonsai-8B.gguf
+    apiBase: http://localhost:8080
+
+mcpServers:
+  - name: Browser search
+    command: npx
+    args:
+      - "@playwright/mcp@latest"
+  - name: DevServer
+    command: npm
+    args:
+      - run
+      - dev
+    env:
+      PORT: "3000"
+context:
+  - provider: diff
+  - provider: file
+  - provider: code
+data:
+  - name: Local Data Bank
+    destination: file:///Users/n1ck3/Downloads/Bonsai_LLM_Agentic_Chatbot-master/Bonsai_LLM_Agentic_Chatbot-master
+    schema: 0.2.0
+    level: all
+
+  
