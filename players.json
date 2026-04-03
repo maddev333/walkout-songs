@@ -5,35 +5,35 @@
       "name": "Johnny Smith",
       "number": "5",
       "song": "eye of the tiger",
-      "audioFile": "audio/eye-of-the-tiger.mp3"
+      "audioFile": "audio/girls-like-you---maroon-5.mp3"
     },
     {
       "id": 2,
       "name": "Mike Johnson",
       "number": "10",
       "song": "rock and roll (will take you to the mountain)",
-      "audioFile": "audio/rock-and-roll.mp3"
+      "audioFile": "audio/closer---chainsmokers.mp3"
     },
     {
       "id": 3,
       "name": "Tommy Williams",
       "number": "7",
       "song": "enter sandman",
-      "audioFile": "audio/enter-sandman.mp3"
+      "audioFile": "audio/faded---alan-walker.mp3"
     },
     {
       "id": 4,
       "name": "Jimmy Brown",
       "number": "3",
       "song": "sweet child of mine",
-      "audioFile": "audio/sweet-child-of-mine.mp3"
+      "audioFile": "audio/hello---adele.mp3"
     },
     {
       "id": 5,
       "name": "Danny Davis",
       "number": "9",
       "song": "we will rock you",
-      "audioFile": "audio/we-will-rock-you.mp3"
+      "audioFile": "audio/roar-remix---katy-perry.mp3"
     }
   ]
 }
