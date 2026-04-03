@@ -9,6 +9,14 @@ let playerGrid = document.getElementById('playerGrid');
 let currentPlayerName = document.getElementById('currentPlayerName');
 let currentSongTitle = document.getElementById('currentSongTitle');
 
+// Announcer variables
+let synth = window.speechSynthesis;
+let voices = [];
+let announcerEnabled = true;
+let announcerVolume = 1.0;
+let announcerRate = 1.0;
+let selectedVoice = null;
+
 // Load players from JSON file
 async function loadPlayers() {
     try {
@@ -66,8 +74,8 @@ function selectPlayer(player) {
     pauseBtn.disabled = false;
     stopBtn.disabled = false;
     
-    // Auto-play on selection
-    playAudio();
+    // Announce and play
+    announceAndPlay(player);
 }
 
 // Play audio
@@ -108,5 +116,105 @@ audioPlayer.addEventListener('ended', () => {
     playBtn.disabled = false;
 });
 
+// Initialize announcer
+function initAnnouncer() {
+    const voiceSelect = document.getElementById('announcerVoice');
+    const volumeSlider = document.getElementById('announcerVolume');
+    const rateSlider = document.getElementById('announcerRate');
+    const toggle = document.getElementById('announcerToggle');
+    const volumeValue = document.getElementById('volumeValue');
+    const rateValue = document.getElementById('rateValue');
+    
+    // Load available voices
+    function loadVoices() {
+        voices = synth.getVoices().sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            // Prefer English voices
+            if (a.lang.startsWith('en') && !b.lang.startsWith('en')) return -1;
+            if (!a.lang.startsWith('en') && b.lang.startsWith('en')) return 1;
+            return aName.localeCompare(bName);
+        });
+        
+        voiceSelect.innerHTML = '';
+        voices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            voiceSelect.appendChild(option);
+        });
+        
+        // Select first English voice by default
+        const englishVoiceIndex = voices.findIndex(v => v.lang.startsWith('en'));
+        if (englishVoiceIndex !== -1) {
+            voiceSelect.value = englishVoiceIndex;
+            selectedVoice = voices[englishVoiceIndex];
+        }
+    }
+    
+    loadVoices();
+    
+    // Some browsers load voices asynchronously
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = loadVoices;
+    }
+    
+    // Toggle announcer
+    toggle.addEventListener('change', (e) => {
+        announcerEnabled = e.target.checked;
+    });
+    
+    // Volume control
+    volumeSlider.addEventListener('input', (e) => {
+        announcerVolume = e.target.value / 100;
+        volumeValue.textContent = `${e.target.value}%`;
+    });
+    
+    // Rate/speed control
+    rateSlider.addEventListener('input', (e) => {
+        announcerRate = parseFloat(e.target.value);
+        rateValue.textContent = `${e.target.value}x`;
+    });
+    
+    // Voice selection
+    voiceSelect.addEventListener('change', (e) => {
+        selectedVoice = voices[e.target.value];
+    });
+}
+
+// Announce player name and number, then play song
+function announceAndPlay(player) {
+    if (announcerEnabled) {
+        // Cancel any ongoing speech
+        synth.cancel();
+        
+        // Create announcement text
+        const announcement = `Number ${player.number}, ${player.name}`;
+        const utterance = new SpeechSynthesisUtterance(announcement);
+        
+        // Set voice if available
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+        
+        // Set volume and rate
+        utterance.volume = announcerVolume;
+        utterance.rate = announcerRate;
+        utterance.pitch = 1.0;
+        
+        // When announcement finishes, play the song
+        utterance.onend = () => {
+            playAudio();
+        };
+        
+        // Speak the announcement
+        synth.speak(utterance);
+    } else {
+        // Just play the song directly
+        playAudio();
+    }
+}
+
 // Initialize the app
 loadPlayers();
+initAnnouncer();
