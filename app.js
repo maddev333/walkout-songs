@@ -116,22 +116,6 @@ audioPlayer.addEventListener('ended', () => {
     playBtn.disabled = false;
 });
 
-// Debug function to show available voices
-function debugVoices() {
-    const currentVoices = window.speechSynthesis.getVoices();
-    console.log('Available voices:', currentVoices);
-    
-    if (currentVoices.length === 0) {
-        alert('⚠️ No voices detected!\n\niOS requires you to:\n1. Tap any button first\n2. Go to Settings > Safari > Features > Enable Speech\n3. Try the debug button again\n\nAvailable voices will appear after user interaction.');
-    } else {
-        let voiceList = '📱 Available Voices:\n\n';
-        currentVoices.forEach((voice, index) => {
-            voiceList += `${index + 1}. ${voice.name} (${voice.lang})\n`;
-        });
-        alert(voiceList);
-    }
-}
-
 // Initialize announcer
 function initAnnouncer() {
     const voiceSelect = document.getElementById('announcerVoice');
@@ -140,12 +124,6 @@ function initAnnouncer() {
     const toggle = document.getElementById('announcerToggle');
     const volumeValue = document.getElementById('volumeValue');
     const rateValue = document.getElementById('rateValue');
-    const debugBtn = document.getElementById('debugVoicesBtn');
-    
-    // Add debug button listener
-    if (debugBtn) {
-        debugBtn.addEventListener('click', debugVoices);
-    }
     
     // Load available voices (iOS-specific handling)
     function loadVoices() {

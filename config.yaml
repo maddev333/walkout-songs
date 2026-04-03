@@ -24,10 +24,5 @@ context:
   - provider: diff
   - provider: file
   - provider: code
-data:
-  - name: Local Data Bank
-    destination: file:///Users/n1ck3/Downloads/Bonsai_LLM_Agentic_Chatbot-master/Bonsai_LLM_Agentic_Chatbot-master
-    schema: 0.2.0
-    level: all
 
   
