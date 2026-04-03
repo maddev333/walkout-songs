@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little League Walkout Songs</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>⚾ Walkout Songs ⚾</h1>
+        <p class="subtitle">Select a player to hear their walkout song!</p>
+        
+        <div class="player-grid" id="playerGrid">
+            <!-- Player buttons will be generated here -->
+        </div>
+
+        <div class="current-player" id="currentPlayer">
+            <h2>Now Playing:</h2>
+            <p id="currentPlayerName">-</p>
+            <p id="currentSongTitle">-</p>
+        </div>
+
+        <div class="controls" id="controls">
+            <button id="playBtn" disabled>▶ Play</button>
+            <button id="pauseBtn" disabled>⏸ Pause</button>
+            <button id="stopBtn" disabled>⏹ Stop</button>
+        </div>
+
+        <audio id="audioPlayer"></audio>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

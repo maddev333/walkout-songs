@@ -1,0 +1,168 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    text-align: center;
+    color: #1e3c72;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.player-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.player-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.player-btn.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    transform: scale(1.05);
+}
+
+.player-number {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+
+.current-player {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.current-player h2 {
+    color: #1e3c72;
+    margin-bottom: 15px;
+}
+
+#currentPlayerName {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0;
+}
+
+#currentSongTitle {
+    color: #666;
+    font-style: italic;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.controls button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+#playBtn {
+    background: #28a745;
+    color: white;
+}
+
+#playBtn:hover:not(:disabled) {
+    background: #218838;
+}
+
+#pauseBtn {
+    background: #ffc107;
+    color: #333;
+}
+
+#pauseBtn:hover:not(:disabled) {
+    background: #e0a800;
+}
+
+#stopBtn {
+    background: #dc3545;
+    color: white;
+}
+
+#stopBtn:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .player-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .player-btn {
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .controls {
+        flex-direction: column;
+    }
+    
+    .controls button {
+        width: 100%;
+    }
+}
