@@ -67,3 +67,5 @@ walkout-songs/
 - Audio files should be in MP3 format for best compatibility
 - Each player needs a unique ID
 - The app will auto-play when a player is selected
+- llama-server.exe --port 8080 --ctx-size 33000 -m ..\Qwen3.5-27B-Q4_K_M.gguf
+- npx @continuedev/cli --config config.yaml --allow Write --allow Edit --auto
