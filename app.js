@@ -12,7 +12,7 @@ let currentSongTitle = document.getElementById('currentSongTitle');
 // Announcer variables
 let synth = window.speechSynthesis;
 let voices = [];
-let announcerEnabled = true;
+let announcerEnabled = false;
 let announcerVolume = 1.0;
 let announcerRate = 1.0;
 let selectedVoice = null;
