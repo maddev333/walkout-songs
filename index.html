@@ -7,12 +7,49 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+       <div class="container">
+        <img src="IMG_7669.JPG" alt="Team Photo" class="header-image">
         <h1>⚾ Walkout Songs ⚾</h1>
         <p class="subtitle">Select a player to hear their walkout song!</p>
         
-        <div class="player-grid" id="playerGrid">
-            <!-- Player buttons will be generated here -->
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button id="songsViewBtn" class="view-btn active">🎵 Songs View</button>
+            <button id="battingOrderBtn" class="view-btn">📋 Batting Order</button>
+        </div>
+
+        <!-- Global Controls -->
+        <div class="global-controls">
+            <label class="availability-control">
+                <input type="checkbox" id="showUnavailableToggle" checked>
+                <span>👁️ Show Unavailable Players</span>
+            </label>
+        </div>
+
+        <!-- Songs View -->
+        <div class="view-container" id="songsView">
+            <div class="player-grid" id="playerGrid">
+                <!-- Player buttons will be generated here -->
+            </div>
+        </div>
+
+        <!-- Batting Order View -->
+        <div class="view-container batting-order-view" id="battingOrderView" style="display: none;">
+            <div class="batting-order-header">
+                <h3>📋 Batting Order</h3>
+                <div class="batting-order-controls">
+                    <button id="resetOrderBtn" title="Reset to default order">🔄 Reset Order</button>
+                    <button id="saveOrderBtn" title="Save current order">💾 Save Order</button>
+                </div>
+            </div>
+            
+            <div class="batting-order-list" id="battingOrderList">
+                <!-- Batting order items will be generated here -->
+            </div>
+            
+            <div class="batting-order-info">
+                <p><strong>💡 Tips:</strong> Drag players to reorder • Click the checkbox next to each player to toggle their availability • Use the "Show Unavailable Players" toggle above to hide/show unavailable players in both views • Unavailable players can't be selected for playback</p>
+            </div>
         </div>
 
         <div class="current-player" id="currentPlayer">
