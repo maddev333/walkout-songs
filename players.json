@@ -5,7 +5,8 @@
       "name": "Gregory",
       "number": "5",
       "song": "Girls Like You",
-      "audioFile": "audio/girls-like-you---maroon-5.mp3"
+      "audioFile": "audio/girls-like-you---maroon-5.mp3",
+      "announcerFile": "announcers/player_5.mp3"
     },
     {
       "id": 2,

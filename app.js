@@ -3,6 +3,7 @@ let players = [];
 let battingOrder = [];
 let currentPlayer = null;
 let audioPlayer = document.getElementById('audioPlayer');
+let announcerPlayer = document.getElementById('announcerPlayer');
 let playBtn = document.getElementById('playBtn');
 let pauseBtn = document.getElementById('pauseBtn');
 let stopBtn = document.getElementById('stopBtn');
@@ -20,12 +21,8 @@ let playerStats = {}; // Object to track player stats (runs, outs, innings, pitc
 let currentInning = 1; // Track current inning number
 
 // Announcer variables
-let synth = window.speechSynthesis;
-let voices = [];
 let announcerEnabled = false;
 let announcerVolume = 1.0;
-let announcerRate = 1.0;
-let selectedVoice = null;
 
 // Load players from JSON file
 async function loadPlayers() {
@@ -199,76 +196,9 @@ audioPlayer.addEventListener('ended', () => {
 
 // Initialize announcer
 function initAnnouncer() {
-    const voiceSelect = document.getElementById('announcerVoice');
     const volumeSlider = document.getElementById('announcerVolume');
-    const rateSlider = document.getElementById('announcerRate');
     const toggle = document.getElementById('announcerToggle');
     const volumeValue = document.getElementById('volumeValue');
-    const rateValue = document.getElementById('rateValue');
-    
-    // Load available voices (iOS-specific handling)
-    function loadVoices() {
-        // Force voice reload on iOS
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            synth.cancel(); // Cancel any ongoing speech to trigger voice reload
-        }
-        
-        voices = synth.getVoices();
-        
-        console.log('Voices loaded:', voices.length);
-        
-        if (voices.length === 0) {
-            console.warn('No voices available yet. Waiting for user interaction...');
-            voiceSelect.innerHTML = '<option value="">Loading voices...</option>';
-            return;
-        }
-        
-        voices = voices.sort((a, b) => {
-            const aName = a.name.toLowerCase();
-            const bName = b.name.toLowerCase();
-            // Prefer English voices
-            if (a.lang.startsWith('en') && !b.lang.startsWith('en')) return -1;
-            if (!a.lang.startsWith('en') && b.lang.startsWith('en')) return 1;
-            return aName.localeCompare(bName);
-        });
-        
-        voiceSelect.innerHTML = '';
-        voices.forEach((voice, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `${voice.name} (${voice.lang})`;
-            voiceSelect.appendChild(option);
-        });
-        
-        // Select first English voice by default
-        const englishVoiceIndex = voices.findIndex(v => v.lang.startsWith('en'));
-        if (englishVoiceIndex !== -1) {
-            voiceSelect.value = englishVoiceIndex;
-            selectedVoice = voices[englishVoiceIndex];
-            console.log('Selected voice:', selectedVoice.name);
-        }
-    }
-    
-    // Try to load voices immediately
-    loadVoices();
-    
-    // iOS requires user interaction first, then voices become available
-    if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = loadVoices;
-    }
-    
-    // Also try loading on first user interaction (iOS specific)
-    let voicesLoaded = false;
-    document.addEventListener('click', function forceLoadVoices() {
-        if (!voicesLoaded) {
-            const newVoices = synth.getVoices();
-            if (newVoices.length > 0 && voices.length === 0) {
-                voicesLoaded = true;
-                loadVoices();
-                console.log('Voices loaded after user interaction');
-            }
-        }
-    }, { once: true });
     
     // Toggle announcer
     toggle.addEventListener('change', (e) => {
@@ -279,47 +209,44 @@ function initAnnouncer() {
     volumeSlider.addEventListener('input', (e) => {
         announcerVolume = e.target.value / 100;
         volumeValue.textContent = `${e.target.value}%`;
+        announcerPlayer.volume = announcerVolume;
     });
     
-    // Rate/speed control
-    rateSlider.addEventListener('input', (e) => {
-        announcerRate = parseFloat(e.target.value);
-        rateValue.textContent = `${e.target.value}x`;
-    });
+    // Set initial volume
+    announcerPlayer.volume = announcerVolume;
     
-    // Voice selection
-    voiceSelect.addEventListener('change', (e) => {
-        selectedVoice = voices[e.target.value];
+    // Handle announcer audio ended - play the song after announcement
+    announcerPlayer.addEventListener('ended', () => {
+        if (currentPlayer) {
+            playAudio();
+        }
     });
 }
 
 // Announce player name and number, then play song
 function announceAndPlay(player) {
     if (announcerEnabled) {
-        // Cancel any ongoing speech
-        synth.cancel();
+        // Stop any ongoing announcer audio
+        announcerPlayer.pause();
+        announcerPlayer.currentTime = 0;
         
-        // Create announcement text
-        const announcement = `Number ${player.number}, ${player.name}`;
-        const utterance = new SpeechSynthesisUtterance(announcement);
+        // Try to load custom announcer audio file
+        // Expected format: announcers/player_{number}.mp3
+        const announcerFile = `announcers/player_${player.number}.mp3`;
         
-        // Set voice if available
-        if (selectedVoice) {
-            utterance.voice = selectedVoice;
-        }
+        // Check if player has a custom announcer file path
+        const customAnnouncerFile = player.announcerFile;
+        const announcerSrc = customAnnouncerFile || announcerFile;
         
-        // Set volume and rate
-        utterance.volume = announcerVolume;
-        utterance.rate = announcerRate;
-        utterance.pitch = 1.0;
+        announcerPlayer.src = announcerSrc;
+        announcerPlayer.volume = announcerVolume;
         
-        // When announcement finishes, play the song
-        utterance.onend = () => {
+        // Try to play the announcer audio
+        announcerPlayer.play().catch(error => {
+            console.warn(`Announcer audio not found for player ${player.name}: ${announcerSrc}. Playing song directly.`);
+            // If announcer file doesn't exist, just play the song
             playAudio();
-        };
-        
-        // Speak the announcement
-        synth.speak(utterance);
+        });
     } else {
         // Just play the song directly
         playAudio();
