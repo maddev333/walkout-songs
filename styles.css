@@ -582,6 +582,16 @@ h1 {
     transition: all 0.3s ease;
 }
 
+#exportStatsBtn {
+    background: #17a2b8;
+    color: white;
+}
+
+#exportStatsBtn:hover {
+    background: #138496;
+    transform: translateY(-2px);
+}
+
 #resetStatsBtn {
     background: #ffc107;
     color: #333;

@@ -628,9 +628,11 @@ function saveAvailability() {
 function setupPlayerStatsControls() {
     const resetStatsBtn = document.getElementById('resetStatsBtn');
     const saveStatsBtn = document.getElementById('saveStatsBtn');
+    const exportStatsBtn = document.getElementById('exportStatsBtn');
     
     resetStatsBtn.addEventListener('click', resetPlayerStats);
     saveStatsBtn.addEventListener('click', savePlayerStats);
+    exportStatsBtn.addEventListener('click', exportPlayerStats);
 }
 
 // Render player stats list
@@ -938,6 +940,98 @@ function resetPlayerStats() {
         localStorage.removeItem('walkoutCurrentInning');
         renderPlayerStats();
     }
+}
+
+// Export player stats to CSV
+function exportPlayerStats() {
+    const sortedPlayers = getSortedPlayers();
+    
+    // Get all innings that have data
+    let allInnings = new Set();
+    sortedPlayers.forEach(player => {
+        const stats = playerStats[player.id];
+        if (stats && stats.perInningStats) {
+            Object.keys(stats.perInningStats).forEach(inning => allInnings.add(inning));
+        }
+    });
+    
+    // Sort innings numerically
+    const innings = Array.from(allInnings).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    // Build CSV content
+    let csvContent = [];
+    
+    // Header row
+    let headers = ['Position', 'Player ID', 'Name', 'Jersey Number'];
+    innings.forEach(inning => {
+        headers.push(`Inning ${inning} - Runs`);
+        headers.push(`Inning ${inning} - Outs`);
+        headers.push(`Inning ${inning} - Pitches`);
+    });
+    headers.push('Total Runs', 'Total Outs', 'Total Pitches', 'Total Innings');
+    csvContent.push(headers.join(','));
+    
+    // Data rows
+    sortedPlayers.forEach(player => {
+        const stats = playerStats[player.id] || { runs: 0, outs: 0, innings: 0, pitches: 0, perInningStats: {} };
+        const position = battingOrder.indexOf(player.id) + 1;
+        
+        let row = [
+            position > 0 ? position : '',
+            player.id,
+            `"${player.name}"`, // Quote name in case it has commas
+            player.number
+        ];
+        
+        // Add per-inning stats
+        innings.forEach(inning => {
+            const inningStats = stats.perInningStats[inning] || { runs: 0, outs: 0, pitches: 0 };
+            row.push(inningStats.runs);
+            row.push(inningStats.outs);
+            row.push(inningStats.pitches);
+        });
+        
+        // Add totals
+        row.push(stats.runs);
+        row.push(stats.outs);
+        row.push(stats.pitches);
+        row.push(stats.innings);
+        
+        csvContent.push(row.join(','));
+    });
+    
+    // Add summary row
+    let totalRuns = 0, totalOuts = 0, totalPitches = 0;
+    sortedPlayers.forEach(player => {
+        const stats = playerStats[player.id];
+        totalRuns += stats.runs;
+        totalOuts += stats.outs;
+        totalPitches += stats.pitches;
+    });
+    
+    let summaryRow = ['SUMMARY', '', '', ''];
+    innings.forEach(() => {
+        // Calculate per-inning totals
+    });
+    summaryRow.push(totalRuns, totalOuts, totalPitches, '');
+    csvContent.push(summaryRow.join(','));
+    
+    // Create and download file
+    const csvBlob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(csvBlob);
+    
+    // Generate filename with date
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('href', url);
+    link.setAttribute('download', `player_stats_${dateStr}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show confirmation
+    alert('Stats exported successfully! File saved as player_stats_' + dateStr + '.csv');
 }
 
 // Initialize the app
