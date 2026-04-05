@@ -545,52 +545,835 @@ h1 {
     white-space: nowrap;
 }
 
-@media (max-width: 768px) {
+/* Player Stats View */
+.player-stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.player-stats-header h3 {
+    color: white;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.player-stats-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.player-stats-controls button {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#resetStatsBtn {
+    background: #ffc107;
+    color: #333;
+}
+
+#resetStatsBtn:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+}
+
+#saveStatsBtn {
+    background: #28a745;
+    color: white;
+}
+
+#saveStatsBtn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.player-stats-list {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.player-stats-item {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #667eea;
+}
+
+.player-stats-item .stats-position {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.player-stats-item .stats-player-info {
+    flex-shrink: 0;
+    margin-left: 15px;
+    min-width: 150px;
+}
+
+.player-stats-item .stats-player-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.player-stats-item .stats-player-number {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.player-stats-item .stats-controls {
+    display: flex;
+    gap: 20px;
+    margin-left: 20px;
+    flex-wrap: wrap;
+}
+
+.player-stats-item .stat-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.player-stats-item .stat-group label {
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: bold;
+}
+
+.player-stats-item .stat-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.player-stats-item .stat-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: #6c757d;
+    color: white;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-stats-item .stat-btn:hover {
+    transform: scale(1.1);
+}
+
+.player-stats-item .stat-btn.minus {
+    background: #dc3545;
+}
+
+.player-stats-item .stat-btn.minus:hover {
+    background: #c82333;
+}
+
+.player-stats-item .stat-btn.plus {
+    background: #28a745;
+}
+
+.player-stats-item .stat-btn.plus:hover {
+    background: #218838;
+}
+
+.player-stats-item .stat-value {
+    min-width: 30px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.player-stats-item .stat-total {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-left: 3px solid #28a745;
+    padding-left: 20px;
+    margin-left: 15px;
+    min-width: 80px;
+}
+
+.player-stats-item .stat-total label {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.player-stats-item .stat-total-runs,
+.player-stats-item .stat-total-outs,
+.player-stats-item .stat-total-pitches {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #1e3c72;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.player-stats-item .stat-total-runs {
+    color: #28a745;
+}
+
+.player-stats-item .stat-total-outs {
+    color: #dc3545;
+}
+
+.player-stats-item .stat-total-pitches {
+    color: #667eea;
+}
+
+/* Stats Summary Section */
+.stats-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stats-summary h4,
+.inning-summary h4 {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Inning Summary Section */
+.inning-summary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Inning Controls */
+.inning-controls {
+    background: #e7f3ff;
+    border: 2px solid #667eea;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.inning-control-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.inning-control-group:last-child {
+    margin-bottom: 0;
+}
+
+.inning-control-group label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #1e3c72;
+}
+
+.inning-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.inning-buttons button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.inning-buttons button:hover:not(:disabled) {
+    background: #5a6fd6;
+    transform: translateY(-2px);
+}
+
+.inning-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.current-inning-display {
+    background: white;
+    color: #1e3c72;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.inning-action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.inning-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Stats Inning Label */
+.stats-inning-label {
+    color: #667eea;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.summary-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px 25px;
+    border-radius: 10px;
+    min-width: 100px;
+}
+
+.summary-group label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+    .container {
+        padding: 20px;
+    }
+    
     h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
     }
     
     .player-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 15px;
+        border-radius: 15px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+    
+    .header-image {
+        max-width: 300px;
+        margin-bottom: 15px;
+    }
+    
+    .player-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
     }
     
     .player-btn {
+        padding: 15px 10px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+    }
+    
+    .current-player {
         padding: 15px;
-        font-size: 0.9rem;
+    }
+    
+    #currentPlayerName {
+        font-size: 1.2rem;
     }
     
     .controls {
         flex-direction: column;
+        gap: 10px;
     }
     
     .controls button {
         width: 100%;
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    
+    .announcer-controls {
+        padding: 15px;
     }
     
     .view-toggle {
         flex-direction: column;
+        gap: 10px;
     }
     
     .view-btn {
         width: 100%;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .global-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .global-controls .availability-control {
+        justify-content: flex-start;
+        font-size: 0.8rem;
+        padding: 8px 10px;
+        background: #f0f4f8;
+        margin-bottom: 5px;
     }
     
     .batting-order-header {
         flex-direction: column;
         align-items: stretch;
+        padding: 12px 15px;
+    }
+    
+    .batting-order-header h3 {
+        font-size: 1.2rem;
+        text-align: center;
     }
     
     .batting-order-controls {
         justify-content: center;
+        gap: 10px;
+    }
+    
+    .batting-order-controls button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .batting-order-list {
+        padding: 15px;
     }
     
     .batting-order-item {
         flex-wrap: wrap;
+        padding: 12px;
+    }
+    
+    .batting-order-item .position-number {
+        width: 30px;
+        height: 30px;
+        font-size: 0.95rem;
+        margin-right: 10px;
+    }
+    
+    .batting-order-item .player-name {
+        font-size: 1rem;
+    }
+    
+    .batting-order-item .player-song {
+        font-size: 0.85rem;
     }
     
     .batting-order-item .move-buttons {
         flex-direction: row;
         margin-left: 0;
         margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .batting-order-item .move-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+    
+    .batting-order-item .availability-toggle {
+        margin-left: 0;
+        margin-top: 8px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .batting-order-info {
+        padding: 12px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .player-stats-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px 15px;
+    }
+    
+    .player-stats-header h3 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+    
+    .player-stats-controls {
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .player-stats-controls button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .player-stats-list {
+        padding: 15px;
+    }
+    
+    .player-stats-item {
+        padding: 12px;
+    }
+    
+    .player-stats-item .stats-position {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .player-stats-item .stats-player-info {
+        min-width: 120px;
+        margin-left: 10px;
+    }
+    
+    .player-stats-item .stats-player-name {
+        font-size: 1rem;
+    }
+    
+    .player-stats-item .stats-controls {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+        gap: 15px;
+    }
+    
+    .player-stats-item .stat-group {
+        margin: 0;
+        flex: 1;
+        min-width: 80px;
+    }
+    
+    .player-stats-item .stat-buttons {
+        gap: 5px;
+    }
+    
+    .player-stats-item .stat-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 1rem;
+    }
+    
+    .player-stats-item .stat-value {
+        font-size: 1rem;
+    }
+    
+    .player-stats-item .stat-total {
+        width: 100%;
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        border-top: 2px solid #28a745;
+        padding-top: 10px;
+        justify-content: space-around;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    
+    .player-stats-item .stat-total label {
+        font-size: 0.7rem;
+    }
+    
+    .player-stats-item .stat-total-runs,
+    .player-stats-item .stat-total-outs,
+    .player-stats-item .stat-total-pitches {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+    
+    .stats-summary,
+    .inning-summary {
+        padding: 15px;
+    }
+    
+    .stats-summary h4,
+    .inning-summary h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    
+    .summary-row {
+        gap: 20px;
+    }
+    
+    .summary-group {
+        padding: 10px 15px;
+        min-width: 80px;
+    }
+    
+    .summary-group label {
+        font-size: 0.8rem;
+    }
+    
+    .summary-value {
+        font-size: 1.5rem;
+    }
+    
+    .inning-controls {
+        padding: 12px 15px;
+    }
+    
+    .inning-control-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .inning-control-group label {
+        font-size: 0.9rem;
+    }
+    
+    .inning-buttons {
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .inning-buttons button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .current-inning-display {
+        padding: 6px 15px;
+        min-width: 100px;
+        font-size: 0.9rem;
+    }
+    
+    .inning-action-btn {
+        width: 100%;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+    }
+    
+    .header-image {
+        max-width: 250px;
+    }
+    
+    .player-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .player-btn {
+        padding: 12px 8px;
+        font-size: 0.75rem;
+        border-radius: 10px;
+    }
+    
+    .player-btn .player-number {
+        font-size: 0.7rem;
+    }
+    
+    .current-player {
+        padding: 10px;
+    }
+    
+    .current-player h2 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    
+    #currentPlayerName {
+        font-size: 1rem;
+        margin: 8px 0;
+    }
+    
+    #currentSongTitle {
+        font-size: 0.85rem;
+    }
+    
+    .controls button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .announcer-controls {
+        padding: 10px;
+    }
+    
+    .announcer-controls h3 {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    
+    .control-group {
+        margin-bottom: 10px;
+    }
+    
+    .control-group label {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+    
+    .control-group select,
+    .control-group input[type="range"] {
+        padding: 8px;
+    }
+    
+    .view-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .batting-order-item .position-number {
+        width: 26px;
+        height: 26px;
+        font-size: 0.85rem;
+    }
+    
+    .batting-order-item .player-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .player-stats-item .stat-group {
+        min-width: 70px;
+    }
+    
+    .summary-group {
+        min-width: 70px;
+        padding: 8px 12px;
+    }
+    
+    .summary-value {
+        font-size: 1.2rem;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .container {
+        max-width: 100%;
+        padding: 10px;
+    }
+    
+    .player-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    
+    .header-image {
+        max-width: 200px;
+        margin-bottom: 10px;
     }
 }
