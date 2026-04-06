@@ -1,41 +1,56 @@
-# Custom Announcer Audio Files
+# Announcer Voices
 
-Place your custom announcer audio files in this folder.
+This folder contains generated sports announcer voice files for player walkout announcements.
+
+## Voice Generation
+
+The announcer voices are generated using **Qwen3-TTS** (Qwen3-TTS-12Hz-1.7B-CustomVoice model), which provides professional-quality text-to-speech with voice style control.
+
+### How to Generate Announcer Voices
+
+1. **Install Dependencies:**
+   ```bash
+   pip install torch soundfile qwen-tts
+   ```
+
+2. **Run the Generator Script:**
+   ```bash
+   python generate_announcer_voices.py
+   ```
+
+3. **Generated Files:**
+   - Audio files are saved as `player_{NUMBER}.wav` (e.g., `player_5.wav`, `player_10.wav`)
+   - Each file contains an exciting sports announcer-style announcement: "Number [X], [Player Name]!"
+
+### Voice Characteristics
+
+- **Speaker:** Ryan (dynamic male voice with strong rhythmic drive)
+- **Style:** Energetic sports announcer, excited and enthusiastic, professional stadium announcer style
+- **Language:** English
+- **Format:** WAV (can be converted to MP3 if needed)
+
+### Converting WAV to MP3 (Optional)
+
+If you want MP3 files instead of WAV:
+
+```bash
+# Using ffmpeg
+ffmpeg -i player_5.wav -codec:a libmp3lame -qscale:a 2 player_5.mp3
+```
+
+Or batch convert all:
+```bash
+for %f in (*.wav) do ffmpeg -i "%f" -codec:a libmp3lame -qscale:a 2 "%~nf.mp3"
+```
 
 ## File Naming Convention
 
-### Option 1: Automatic Naming (Recommended)
-Name your files using the player's jersey number:
-```
-player_5.mp3    # For player #5 (Gregory)
-player_10.mp3   # For player #10 (Calvin)
-player_7.mp3    # For player #7 (Jacob)
-```
+- `player_{NUMBER}.wav` or `player_{NUMBER}.mp3`
+- Where `{NUMBER}` is the player's jersey number
 
-### Option 2: Custom Path in players.json
-You can also specify a custom path in the `players.json` file by adding an `announcerFile` field:
-```json
-{
-  "id": 1,
-  "name": "Gregory",
-  "number": "5",
-  "song": "Girls Like You",
-  "audioFile": "audio/girls-like-you---maroon-5.mp3",
-  "announcerFile": "announcers/gregory-announcement.mp3"
-}
-```
+## Integration with Walkout Songs App
 
-## Audio Format
-- **Format**: MP3 (recommended)
-- **Quality**: Any quality works, but 128kbps or higher is recommended
-- **Content**: Record announcements like "Number 5, Gregory!" or any custom message
+The announcer voices are automatically used by the walkout songs app when the "Enable Announcer" toggle is turned on. The app will:
 
-## How It Works
-1. Enable the "Enable Announcer" toggle in the Announcer Settings
-2. Select a player
-3. If an announcer file exists for that player, it will play first
-4. After the announcement finishes, the player's walkout song will play automatically
-5. If no announcer file exists, the song will play directly
-
-## Volume Control
-Use the volume slider in the Announcer Settings to adjust the announcer audio volume independently.
+1. Play the announcer voice first (announcing the player)
+2. Automatically play the player's walkout song after the announcement completes

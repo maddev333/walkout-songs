@@ -13,28 +13,32 @@
       "name": "Calvin",
       "number": "10",
       "song": "Closer",
-      "audioFile": "audio/closer---chainsmokers.mp3"
+      "audioFile": "audio/closer---chainsmokers.mp3",
+      "announcerFile": "announcers/player_10.mp3"
     },
     {
       "id": 3,
       "name": "Jacob",
       "number": "7",
       "song": "Enter Sandman",
-      "audioFile": "audio/enter-sandman---metallica.mp3"
+      "audioFile": "audio/enter-sandman---metallica.mp3",
+      "announcerFile": "announcers/player_7.mp3"
     },
     {
       "id": 4,
       "name": "Kirk",
       "number": "2",
       "song": "Take on me",
-      "audioFile": "audio/take-on-me.mp3"
+      "audioFile": "audio/take-on-me.mp3",
+      "announcerFile": "announcers/player_2.mp3"
     },
     {
       "id": 5,
       "name": "Nicolas",
       "number": "9",
       "song": "Roar",
-      "audioFile": "audio/roar-remix---katy-perry.mp3"
+      "audioFile": "audio/blitzkrieg-bop.mp3",
+      "announcerFile": "announcers/player_9.mp3"
     },
     {
       "id": 6,
@@ -49,35 +53,40 @@
       "name": "Holden",
       "number": "11",
       "song": "Lose Yourself",
-      "audioFile": "audio/lose-yourself---eminem.mp3"
+      "audioFile": "audio/lose-yourself---eminem.mp3",
+      "announcerFile": "announcers/player_11.mp3"
     },
     {
       "id": 8,
       "name": "Michael",
       "number": "17",
       "song": "Seven Nation Army",
-      "audioFile": "audio/seven-nation-army---white-stripes.mp3"
+      "audioFile": "audio/seven-nation-army---white-stripes.mp3",
+      "announcerFile": "announcers/player_17.mp3"
     },
     {
       "id": 9,
       "name": "Samuel",
       "number": "19",
       "song": "We Will Rock You",
-      "audioFile": "audio/we-will-rock-you---queen.mp3"
+      "audioFile": "audio/we-will-rock-you---queen.mp3",
+      "announcerFile": "announcers/player_19.mp3"
     },
     {
       "id": 10,
       "name": "Brooks",
       "number": "18",
       "song": "Uptown Funk",
-      "audioFile": "audio/uptown-funk---bruno-mars.mp3"
+      "audioFile": "audio/uptown-funk---bruno-mars.mp3",
+      "announcerFile": "announcers/player_18.mp3"
     },
     {
       "id": 11,
       "name": "Leo",
       "number": "20",
       "song": "Shape of You",
-      "audioFile": "audio/shape-of-you---ed-sheeran.mp3"
+      "audioFile": "audio/queen---dont-stop-me-now.mp3",
+      "announcerFile": "announcers/player_20.mp3"
     }
   ]
 }
