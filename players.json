@@ -36,7 +36,7 @@
       "id": 5,
       "name": "Nicolas",
       "number": "9",
-      "song": "Roar",
+      "song": "Blitzkrieg Bop",
       "audioFile": "audio/blitzkrieg-bop.mp3",
       "announcerFile": "announcers/player_9.mp3"
     },
@@ -84,7 +84,7 @@
       "id": 11,
       "name": "Leo",
       "number": "20",
-      "song": "Shape of You",
+      "song": "Queen - Don't Stop Me Now",
       "audioFile": "audio/queen---dont-stop-me-now.mp3",
       "announcerFile": "announcers/player_20.mp3"
     }
