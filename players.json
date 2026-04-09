@@ -6,7 +6,7 @@
       "number": "3",
       "song": "Can't Tell Me Nothing",
       "audioFile": "audio/cant-tell-me-nothing.mp3",
-      "announcerFile": "announcers/player_3.mp3"
+      "announcerFile": "announcers/player_3.wav"
     },
     {
       "id": 2,
@@ -14,7 +14,7 @@
       "number": "13",
       "song": "Glory Days",
       "audioFile": "audio/glory-days.mp3",
-      "announcerFile": "announcers/player_13.mp3"
+      "announcerFile": "announcers/player_13.wav"
     },
     {
       "id": 3,
@@ -22,7 +22,7 @@
       "number": "7",
       "song": "Enter Sandman",
       "audioFile": "audio/enter-sandman---metallica.mp3",
-      "announcerFile": "announcers/player_7.mp3"
+      "announcerFile": "announcers/player_7.wav"
     },
     {
       "id": 4,
@@ -30,7 +30,7 @@
       "number": "2",
       "song": "Take on me",
       "audioFile": "audio/take-on-me.mp3",
-      "announcerFile": "announcers/player_2.mp3"
+      "announcerFile": "announcers/player_2.wav"
     },
     {
       "id": 5,
@@ -38,7 +38,7 @@
       "number": "9",
       "song": "Blitzkrieg Bop",
       "audioFile": "audio/blitzkrieg-bop.mp3",
-      "announcerFile": "announcers/player_9.mp3"
+      "announcerFile": "announcers/player_9.wav"
     },
     {
       "id": 6,
@@ -46,7 +46,7 @@
       "number": "8",
       "song": "Hooked on a Feeling",
       "audioFile": "audio/hooked-on-a-feeling.mp3",
-      "announcerFile": "announcers/player_8.mp3"
+      "announcerFile": "announcers/player_8.wav"
     },
     {
       "id": 7,
@@ -54,7 +54,7 @@
       "number": "11",
       "song": "Nice to Meet You",
       "audioFile": "audio/nice-to-meet-you.mp3",
-      "announcerFile": "announcers/player_11.mp3"
+      "announcerFile": "announcers/player_11.wav"
     },
     {
       "id": 8,
@@ -62,7 +62,7 @@
       "number": "9",
       "song": "Eye of the Tiger",
       "audioFile": "audio/eye-of-the-tiger.mp3",
-      "announcerFile": "announcers/player_9.mp3"
+      "announcerFile": "announcers/player_9.wav"
     },
     {
       "id": 9,
@@ -70,7 +70,7 @@
       "number": "19",
       "song": "We Will Rock You",
       "audioFile": "audio/we-will-rock-you---queen.mp3",
-      "announcerFile": "announcers/player_19.mp3"
+      "announcerFile": "announcers/player_19.wav"
     },
     {
       "id": 10,
@@ -78,7 +78,7 @@
       "number": "18",
       "song": "Uptown Funk",
       "audioFile": "audio/uptown-funk---bruno-mars.mp3",
-      "announcerFile": "announcers/player_18.mp3"
+      "announcerFile": "announcers/player_18.wav"
     },
     {
       "id": 11,
@@ -86,7 +86,7 @@
       "number": "20",
       "song": "Queen - Don't Stop Me Now",
       "audioFile": "audio/queen---dont-stop-me-now.mp3",
-      "announcerFile": "announcers/player_20.mp3"
+      "announcerFile": "announcers/player_20.wav"
     }
   ]
 }
