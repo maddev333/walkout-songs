@@ -35,10 +35,10 @@
     {
       "id": 5,
       "name": "Nicolas",
-      "number": "9",
+      "number": "99",
       "song": "Blitzkrieg Bop",
       "audioFile": "audio/blitzkrieg-bop.mp3",
-      "announcerFile": "announcers/player_9.wav"
+      "announcerFile": "announcers/player_99.wav"
     },
     {
       "id": 6,
