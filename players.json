@@ -19,10 +19,10 @@
     {
       "id": 3,
       "name": "Jacob",
-      "number": "7",
+      "number": "6",
       "song": "Enter Sandman",
       "audioFile": "audio/enter-sandman---metallica.mp3",
-      "announcerFile": "announcers/player_7.wav"
+      "announcerFile": "announcers/player_6.wav"
     },
     {
       "id": 4,
@@ -35,10 +35,10 @@
     {
       "id": 5,
       "name": "Nicolas",
-      "number": "99",
+      "number": "4",
       "song": "Blitzkrieg Bop",
       "audioFile": "audio/blitzkrieg-bop.mp3",
-      "announcerFile": "announcers/player_99.wav"
+      "announcerFile": "announcers/player_4.wav"
     },
     {
       "id": 6,
@@ -51,10 +51,10 @@
     {
       "id": 7,
       "name": "Holden",
-      "number": "11",
+      "number": "7",
       "song": "Nice to Meet You",
       "audioFile": "audio/nice-to-meet-you.mp3",
-      "announcerFile": "announcers/player_11.wav"
+      "announcerFile": "announcers/player_7.wav"
     },
     {
       "id": 8,
@@ -66,27 +66,27 @@
     },
     {
       "id": 9,
-      "name": "Samuel",
-      "number": "19",
-      "song": "We Will Rock You",
-      "audioFile": "audio/we-will-rock-you---queen.mp3",
-      "announcerFile": "announcers/player_19.wav"
+      "name": "Sam",
+      "number": "5",
+      "song": "Pressure",
+      "audioFile": "audio/pressure.mp3",
+      "announcerFile": "announcers/player_5.wav"
     },
     {
       "id": 10,
       "name": "Brooks",
-      "number": "18",
-      "song": "Uptown Funk",
-      "audioFile": "audio/uptown-funk---bruno-mars.mp3",
-      "announcerFile": "announcers/player_18.wav"
+      "number": "1",
+      "song": "Thunderstruck",
+      "audioFile": "audio/thunderstruck.mp3",
+      "announcerFile": "announcers/player_1.wav"
     },
     {
       "id": 11,
       "name": "Leo",
-      "number": "20",
+      "number": "11",
       "song": "Queen - Don't Stop Me Now",
       "audioFile": "audio/queen---dont-stop-me-now.mp3",
-      "announcerFile": "announcers/player_20.wav"
+      "announcerFile": "announcers/player_11.wav"
     }
   ]
 }

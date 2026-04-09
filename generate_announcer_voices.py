@@ -49,7 +49,7 @@ def generate_announcer_voice(
     tts_model: Qwen3TTSModel,
     text: str,
     speaker: str = "Ryan",
-    instruct: str = "Energetic sports announcer voice, excited and enthusiastic, professional stadium announcer style"
+    instruct: str = "Energetic sports announcer voice, excited and enthusiastic, professional stadium announcer style, deep and resonant tone, clear and powerful delivery, strong rhythmic drive"
 ) -> tuple:
     """
     Generate announcer voice using Qwen3-TTS CustomVoice model.
