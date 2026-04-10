@@ -16,12 +16,8 @@ let showUnavailableToggle = document.getElementById('showUnavailableToggle');
 // Player availability tracking
 let playerAvailability = {}; // Object to track which players are available (true/false)
 
-// Player stats tracking
-let playerStats = {}; // Object to track player stats (runs, outs, innings, pitches, perInningStats)
-let currentInning = 1; // Track current inning number
-
 // Announcer variables
-let announcerEnabled = false;
+let announcerEnabled = true;
 let announcerVolume = 1.0;
 
 // Load players from JSON file
@@ -31,29 +27,18 @@ async function loadPlayers() {
         const data = await response.json();
         players = data.players;
         
-        // Initialize availability for all players (default to available)
+               // Initialize availability for all players (default to available)
         players.forEach(player => {
             playerAvailability[player.id] = true;
-            // Initialize stats for all players with per-inning tracking
-            playerStats[player.id] = {
-                runs: 0,
-                outs: 0,
-                innings: 0,
-                pitches: 0,
-                perInningStats: {} // Keyed by inning number
-            };
         });
         
         // Load saved batting order if exists
         loadBattingOrder();
-        loadPlayerStats();
         
         renderPlayerButtons();
         renderBattingOrder();
-        renderPlayerStats();
         setupViewToggles();
         setupBattingOrderControls();
-        setupPlayerStatsControls();
     } catch (error) {
         console.error('Error loading players:', error);
         currentPlayerName.textContent = 'Error loading players';
@@ -261,36 +246,21 @@ function announceAndPlay(player) {
 function setupViewToggles() {
     const songsViewBtn = document.getElementById('songsViewBtn');
     const battingOrderBtn = document.getElementById('battingOrderBtn');
-    const playerStatsBtn = document.getElementById('playerStatsBtn');
     const songsView = document.getElementById('songsView');
     const battingOrderView = document.getElementById('battingOrderView');
-    const playerStatsView = document.getElementById('playerStatsView');
     
     songsViewBtn.addEventListener('click', () => {
         songsViewBtn.classList.add('active');
         battingOrderBtn.classList.remove('active');
-        playerStatsBtn.classList.remove('active');
         songsView.style.display = 'block';
         battingOrderView.style.display = 'none';
-        playerStatsView.style.display = 'none';
     });
     
     battingOrderBtn.addEventListener('click', () => {
         battingOrderBtn.classList.add('active');
         songsViewBtn.classList.remove('active');
-        playerStatsBtn.classList.remove('active');
         battingOrderView.style.display = 'block';
         songsView.style.display = 'none';
-        playerStatsView.style.display = 'none';
-    });
-    
-    playerStatsBtn.addEventListener('click', () => {
-        playerStatsBtn.classList.add('active');
-        songsViewBtn.classList.remove('active');
-        battingOrderBtn.classList.remove('active');
-        playerStatsView.style.display = 'block';
-        songsView.style.display = 'none';
-        battingOrderView.style.display = 'none';
     });
 }
 
@@ -545,420 +515,6 @@ function resetBattingOrder() {
 // Save availability to localStorage
 function saveAvailability() {
     localStorage.setItem('walkoutPlayerAvailability', JSON.stringify(playerAvailability));
-}
-
-// ========================================
-// PLAYER STATS FUNCTIONS
-// ========================================
-
-// Setup player stats controls
-function setupPlayerStatsControls() {
-    const resetStatsBtn = document.getElementById('resetStatsBtn');
-    const saveStatsBtn = document.getElementById('saveStatsBtn');
-    const exportStatsBtn = document.getElementById('exportStatsBtn');
-    
-    resetStatsBtn.addEventListener('click', resetPlayerStats);
-    saveStatsBtn.addEventListener('click', savePlayerStats);
-    exportStatsBtn.addEventListener('click', exportPlayerStats);
-}
-
-// Render player stats list
-function renderPlayerStats() {
-    const playerStatsList = document.getElementById('playerStatsList');
-    playerStatsList.innerHTML = '';
-    
-    // Calculate totals for summary
-    let totalRuns = 0;
-    let totalOuts = 0;
-    let totalInnings = 0;
-    let totalPitches = 0;
-    
-    // Get sorted players by batting order
-    const sortedPlayers = getSortedPlayers();
-    
-    // Calculate totals
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id] || { runs: 0, outs: 0, innings: 0, pitches: 0 };
-        totalRuns += stats.runs;
-        totalOuts += stats.outs;
-        totalInnings += stats.innings;
-        totalPitches += stats.pitches;
-    });
-    
-    // Create inning controls section
-    const inningControls = document.createElement('div');
-    inningControls.className = 'inning-controls';
-    inningControls.innerHTML = `
-        <div class="inning-control-group">
-            <label>🏏 Current Inning:</label>
-            <div class="inning-buttons">
-                <button id="prevInningBtn" ${currentInning <= 1 ? 'disabled' : ''}>◀ Previous</button>
-                <span class="current-inning-display">Inning ${currentInning}</span>
-                <button id="nextInningBtn">Next ▶</button>
-            </div>
-        </div>
-        <div class="inning-control-group">
-            <button id="addInningBtn" class="inning-action-btn">➕ Add New Inning</button>
-        </div>
-    `;
-    playerStatsList.appendChild(inningControls);
-    
-    // Add event listeners for inning controls
-    document.getElementById('prevInningBtn').addEventListener('click', () => {
-        if (currentInning > 1) {
-            currentInning--;
-            renderPlayerStats();
-        }
-    });
-    
-    document.getElementById('nextInningBtn').addEventListener('click', () => {
-        currentInning++;
-        renderPlayerStats();
-    });
-    
-    document.getElementById('addInningBtn').addEventListener('click', () => {
-        currentInning = Math.max(...Object.keys(playerStats[sortedPlayers[0]?.id]?.perInningStats || {}).map(Number)) + 1;
-        if (currentInning === 0) currentInning = 1;
-        renderPlayerStats();
-    });
-    
-    // Create summary section
-    const summarySection = document.createElement('div');
-    summarySection.className = 'stats-summary';
-    summarySection.innerHTML = `
-        <h4>📊 Team Summary (All Innings)</h4>
-        <div class="summary-row">
-            <div class="summary-group">
-                <label>Runs</label>
-                <div class="summary-value">${totalRuns}</div>
-            </div>
-            <div class="summary-group">
-                <label>Outs</label>
-                <div class="summary-value">${totalOuts}</div>
-            </div>
-            <div class="summary-group">
-                <label>Innings</label>
-                <div class="summary-value">${totalInnings}</div>
-            </div>
-            <div class="summary-group">
-                <label>Pitches</label>
-                <div class="summary-value">${totalPitches}</div>
-            </div>
-        </div>
-    `;
-    playerStatsList.appendChild(summarySection);
-    
-    // Calculate current inning totals
-    let inningRuns = 0;
-    let inningOuts = 0;
-    let inningPitches = 0;
-    
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id];
-        const inningStats = stats?.perInningStats?.[currentInning] || { runs: 0, outs: 0, pitches: 0 };
-        inningRuns += inningStats.runs;
-        inningOuts += inningStats.outs;
-        inningPitches += inningStats.pitches;
-    });
-    
-    // Create current inning summary
-    const inningSummary = document.createElement('div');
-    inningSummary.className = 'inning-summary';
-    inningSummary.innerHTML = `
-        <h4>🏏 Inning ${currentInning} Summary</h4>
-        <div class="summary-row">
-            <div class="summary-group">
-                <label>Runs</label>
-                <div class="summary-value">${inningRuns}</div>
-            </div>
-            <div class="summary-group">
-                <label>Outs</label>
-                <div class="summary-value">${inningOuts}</div>
-            </div>
-            <div class="summary-group">
-                <label>Pitches</label>
-                <div class="summary-value">${inningPitches}</div>
-            </div>
-        </div>
-    `;
-    playerStatsList.appendChild(inningSummary);
-    
-    // Render individual player stats for current inning
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id] || { runs: 0, outs: 0, innings: 0, pitches: 0, perInningStats: {} };
-        const inningStats = stats.perInningStats[currentInning] || { runs: 0, outs: 0, pitches: 0 };
-        
-        const item = document.createElement('div');
-        item.className = 'player-stats-item';
-        item.setAttribute('data-id', player.id);
-        
-        const position = battingOrder.indexOf(player.id) + 1;
-        const positionText = position > 0 ? position : '-';
-        
-        item.innerHTML = `
-            <div class="stats-position">#${positionText}</div>
-            <div class="stats-player-info">
-                <div class="stats-player-name">${player.name}</div>
-                <div class="stats-player-number">#${player.number}</div>
-                <div class="stats-inning-label">Inning ${currentInning}</div>
-            </div>
-            <div class="stats-controls">
-                <div class="stat-group">
-                    <label>Runs</label>
-                    <div class="stat-buttons">
-                        <button class="stat-btn minus" data-stat="runs" data-player-id="${player.id}">-</button>
-                        <span class="stat-value">${inningStats.runs}</span>
-                        <button class="stat-btn plus" data-stat="runs" data-player-id="${player.id}">+</button>
-                    </div>
-                </div>
-                <div class="stat-group">
-                    <label>Outs</label>
-                    <div class="stat-buttons">
-                        <button class="stat-btn minus" data-stat="outs" data-player-id="${player.id}">-</button>
-                        <span class="stat-value">${inningStats.outs}</span>
-                        <button class="stat-btn plus" data-stat="outs" data-player-id="${player.id}">+</button>
-                    </div>
-                </div>
-                <div class="stat-group">
-                    <label>Pitches</label>
-                    <div class="stat-buttons">
-                        <button class="stat-btn minus" data-stat="pitches" data-player-id="${player.id}">-</button>
-                        <span class="stat-value">${inningStats.pitches}</span>
-                        <button class="stat-btn plus" data-stat="pitches" data-player-id="${player.id}">+</button>
-                    </div>
-                </div>
-                <div class="stat-total">
-                    <label>Total</label>
-                    <div class="stat-total-runs">R:${stats.runs}</div>
-                    <div class="stat-total-outs">O:${stats.outs}</div>
-                    <div class="stat-total-pitches">P:${stats.pitches}</div>
-                </div>
-            </div>
-        `;
-        
-        // Add event listeners for stat buttons
-        item.querySelectorAll('.stat-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const statType = btn.getAttribute('data-stat');
-                const playerId = parseInt(btn.getAttribute('data-player-id'));
-                const isPlus = btn.classList.contains('plus');
-                
-                updatePlayerStat(playerId, statType, isPlus ? 1 : -1, currentInning);
-            });
-        });
-        
-        playerStatsList.appendChild(item);
-    });
-}
-
-// Update player stat (for current inning)
-function updatePlayerStat(playerId, statType, delta, inningNum = null) {
-    if (!playerStats[playerId]) {
-        playerStats[playerId] = { 
-            runs: 0, 
-            outs: 0, 
-            innings: 0,
-            pitches: 0,
-            perInningStats: {}
-        };
-    }
-    
-    // Use provided inning number or default to currentInning
-    const inning = inningNum || currentInning;
-    
-    // Initialize per-inning stats if needed
-    if (!playerStats[playerId].perInningStats[inning]) {
-        playerStats[playerId].perInningStats[inning] = { runs: 0, outs: 0, pitches: 0 };
-    }
-    
-    // Update per-inning stat
-    playerStats[playerId].perInningStats[inning][statType] += delta;
-    
-    // Prevent negative values for per-inning stats
-    if (playerStats[playerId].perInningStats[inning][statType] < 0) {
-        playerStats[playerId].perInningStats[inning][statType] = 0;
-    }
-    
-    // Recalculate totals from all innings
-    recalculatePlayerTotals(playerId);
-    
-    renderPlayerStats();
-}
-
-// Recalculate player totals from all innings
-function recalculatePlayerTotals(playerId) {
-    if (!playerStats[playerId]) return;
-    
-    let totalRuns = 0;
-    let totalOuts = 0;
-    let totalPitches = 0;
-    
-    Object.values(playerStats[playerId].perInningStats).forEach(inningStats => {
-        totalRuns += inningStats.runs;
-        totalOuts += inningStats.outs;
-        totalPitches += inningStats.pitches;
-    });
-    
-    playerStats[playerId].runs = totalRuns;
-    playerStats[playerId].outs = totalOuts;
-    playerStats[playerId].pitches = totalPitches;
-    
-    // Count number of innings player has participated in
-    playerStats[playerId].innings = Object.keys(playerStats[playerId].perInningStats).length;
-}
-
-// Save player stats to localStorage
-function savePlayerStats() {
-    localStorage.setItem('walkoutPlayerStats', JSON.stringify(playerStats));
-    localStorage.setItem('walkoutCurrentInning', currentInning.toString());
-    
-    // Show confirmation
-    const saveStatsBtn = document.getElementById('saveStatsBtn');
-    const originalText = saveStatsBtn.innerHTML;
-    saveStatsBtn.innerHTML = '✓ Saved!';
-    setTimeout(() => {
-        saveStatsBtn.innerHTML = originalText;
-    }, 2000);
-}
-
-// Load player stats from localStorage
-function loadPlayerStats() {
-    const savedStats = localStorage.getItem('walkoutPlayerStats');
-    const savedCurrentInning = localStorage.getItem('walkoutCurrentInning');
-    
-    if (savedStats) {
-        try {
-            const saved = JSON.parse(savedStats);
-            // Merge saved stats with current stats structure
-            Object.keys(saved).forEach(playerId => {
-                if (playerStats[playerId]) {
-                    playerStats[playerId] = {
-                        ...playerStats[playerId],
-                        ...saved[playerId]
-                    };
-                }
-            });
-            
-            // Load current inning if saved
-            if (savedCurrentInning) {
-                currentInning = parseInt(savedCurrentInning);
-            }
-        } catch (e) {
-            console.error('Error loading player stats:', e);
-        }
-    }
-}
-
-// Reset player stats
-function resetPlayerStats() {
-    if (confirm('Reset all player stats to zero?')) {
-        players.forEach(player => {
-            playerStats[player.id] = {
-                runs: 0,
-                outs: 0,
-                innings: 0,
-                pitches: 0,
-                perInningStats: {}
-            };
-        });
-        currentInning = 1;
-        localStorage.removeItem('walkoutPlayerStats');
-        localStorage.removeItem('walkoutCurrentInning');
-        renderPlayerStats();
-    }
-}
-
-// Export player stats to CSV
-function exportPlayerStats() {
-    const sortedPlayers = getSortedPlayers();
-    
-    // Get all innings that have data
-    let allInnings = new Set();
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id];
-        if (stats && stats.perInningStats) {
-            Object.keys(stats.perInningStats).forEach(inning => allInnings.add(inning));
-        }
-    });
-    
-    // Sort innings numerically
-    const innings = Array.from(allInnings).sort((a, b) => parseInt(a) - parseInt(b));
-    
-    // Build CSV content
-    let csvContent = [];
-    
-    // Header row
-    let headers = ['Position', 'Player ID', 'Name', 'Jersey Number'];
-    innings.forEach(inning => {
-        headers.push(`Inning ${inning} - Runs`);
-        headers.push(`Inning ${inning} - Outs`);
-        headers.push(`Inning ${inning} - Pitches`);
-    });
-    headers.push('Total Runs', 'Total Outs', 'Total Pitches', 'Total Innings');
-    csvContent.push(headers.join(','));
-    
-    // Data rows
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id] || { runs: 0, outs: 0, innings: 0, pitches: 0, perInningStats: {} };
-        const position = battingOrder.indexOf(player.id) + 1;
-        
-        let row = [
-            position > 0 ? position : '',
-            player.id,
-            `"${player.name}"`, // Quote name in case it has commas
-            player.number
-        ];
-        
-        // Add per-inning stats
-        innings.forEach(inning => {
-            const inningStats = stats.perInningStats[inning] || { runs: 0, outs: 0, pitches: 0 };
-            row.push(inningStats.runs);
-            row.push(inningStats.outs);
-            row.push(inningStats.pitches);
-        });
-        
-        // Add totals
-        row.push(stats.runs);
-        row.push(stats.outs);
-        row.push(stats.pitches);
-        row.push(stats.innings);
-        
-        csvContent.push(row.join(','));
-    });
-    
-    // Add summary row
-    let totalRuns = 0, totalOuts = 0, totalPitches = 0;
-    sortedPlayers.forEach(player => {
-        const stats = playerStats[player.id];
-        totalRuns += stats.runs;
-        totalOuts += stats.outs;
-        totalPitches += stats.pitches;
-    });
-    
-    let summaryRow = ['SUMMARY', '', '', ''];
-    innings.forEach(() => {
-        // Calculate per-inning totals
-    });
-    summaryRow.push(totalRuns, totalOuts, totalPitches, '');
-    csvContent.push(summaryRow.join(','));
-    
-    // Create and download file
-    const csvBlob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(csvBlob);
-    
-    // Generate filename with date
-    const dateStr = new Date().toISOString().split('T')[0];
-    link.setAttribute('href', url);
-    link.setAttribute('download', `player_stats_${dateStr}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Show confirmation
-    alert('Stats exported successfully! File saved as player_stats_' + dateStr + '.csv');
 }
 
 // Initialize the app

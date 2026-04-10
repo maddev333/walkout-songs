@@ -12,11 +12,10 @@
         <h1>⚾ Walkout Songs ⚾</h1>
         <p class="subtitle">Select a player to hear their walkout song!</p>
         
-        <!-- View Toggle -->
+               <!-- View Toggle -->
         <div class="view-toggle">
             <button id="songsViewBtn" class="view-btn active">🎵 Songs View</button>
             <button id="battingOrderBtn" class="view-btn">📋 Batting Order</button>
-            <button id="playerStatsBtn" class="view-btn">📊 Player Stats</button>
         </div>
 
         <!-- Global Controls -->
@@ -53,23 +52,7 @@
             </div>
         </div>
 
-        <!-- Player Stats View -->
-        <div class="view-container player-stats-view" id="playerStatsView" style="display: none;">
-            <div class="player-stats-header">
-                <h3>📊 Player Stats</h3>
-                <div class="player-stats-controls">
-                    <button id="exportStatsBtn" title="Export stats to CSV">📥 Export CSV</button>
-                    <button id="resetStatsBtn" title="Reset all stats">🔄 Reset Stats</button>
-                    <button id="saveStatsBtn" title="Save stats">💾 Save Stats</button>
-                </div>
-            </div>
-            
-            <div class="player-stats-list" id="playerStatsList">
-                <!-- Player stats will be generated here -->
-            </div>
-        </div>
-
-        <div class="current-player" id="currentPlayer">
+               <div class="current-player" id="currentPlayer">
             <h2>Now Playing:</h2>
             <p id="currentPlayerName">-</p>
             <p id="currentSongTitle">-</p>
@@ -86,7 +69,7 @@
  
             <div class="control-group">
                 <label for="announcerToggle">
-                    <input type="checkbox" id="announcerToggle" unchecked>
+                    <input type="checkbox" id="announcerToggle" checked>
                     Enable Announcer
                 </label>
             </div>

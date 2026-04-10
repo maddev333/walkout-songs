@@ -42,7 +42,7 @@ h1 {
     width: 100%;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    border: 3px solid #667eea;
+    border: 3px solid #6c757d;
 }
 
 .player-grid {
@@ -53,7 +53,7 @@ h1 {
 }
 
 .player-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     border: none;
     padding: 20px;
@@ -71,7 +71,7 @@ h1 {
 }
 
 .player-btn.active {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
     transform: scale(1.05);
 }
 
@@ -211,7 +211,7 @@ h1 {
     -webkit-appearance: none;
     width: 20px;
     height: 20px;
-    background: #667eea;
+    background: #6c757d;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -219,14 +219,14 @@ h1 {
 .control-group input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
-    background: #667eea;
+    background: #6c757d;
     border-radius: 50%;
     cursor: pointer;
     border: none;
 }
 
 .control-group span {
-    color: #667eea;
+    color: #6c757d;
     font-weight: bold;
 }
 
@@ -241,10 +241,10 @@ h1 {
 .view-btn {
     padding: 12px 25px;
     font-size: 1rem;
-    border: 2px solid #667eea;
+    border: 2px solid #6c757d;
     border-radius: 10px;
     background: white;
-    color: #667eea;
+    color: #6c757d;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: bold;
@@ -256,7 +256,7 @@ h1 {
 }
 
 .view-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     border-color: transparent;
 }
@@ -307,7 +307,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     padding: 15px 20px;
     border-radius: 15px;
@@ -389,7 +389,7 @@ h1 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: grab;
     transition: all 0.3s ease;
-    border-left: 5px solid #667eea;
+    border-left: 5px solid #6c757d;
 }
 
 .batting-order-item:hover {
@@ -416,7 +416,7 @@ h1 {
 }
 
 .batting-order-item .position-number {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     width: 35px;
     height: 35px;
@@ -446,7 +446,7 @@ h1 {
 }
 
 .batting-order-item .player-song {
-    color: #667eea;
+    color: #6c757d;
     font-style: italic;
     font-size: 0.9rem;
 }
@@ -505,7 +505,7 @@ h1 {
 
 .batting-order-info {
     background: #e7f3ff;
-    border: 2px solid #667eea;
+    border: 2px solid #6c757d;
     padding: 15px 20px;
     border-radius: 10px;
     margin-top: 20px;
@@ -520,7 +520,7 @@ h1 {
 
 /* Drag and Drop Visuals */
 .batting-order-list.drag-over .batting-order-item {
-    border: 2px dashed #667eea;
+    border: 2px dashed #6c757d;
 }
 
 /* Player Button Styles for Unavailable */
@@ -550,7 +550,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     padding: 15px 20px;
     border-radius: 15px;
@@ -624,11 +624,11 @@ h1 {
     margin-bottom: 10px;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-left: 5px solid #667eea;
+    border-left: 5px solid #6c757d;
 }
 
 .player-stats-item .stats-position {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     width: 40px;
     height: 40px;
@@ -767,12 +767,12 @@ h1 {
 }
 
 .player-stats-item .stat-total-pitches {
-    color: #667eea;
+    color: #6c757d;
 }
 
 /* Stats Summary Section */
 .stats-summary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     padding: 20px;
     border-radius: 12px;
@@ -790,7 +790,7 @@ h1 {
 
 /* Inning Summary Section */
 .inning-summary {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
     color: white;
     padding: 20px;
     border-radius: 12px;
@@ -801,7 +801,7 @@ h1 {
 /* Inning Controls */
 .inning-controls {
     background: #e7f3ff;
-    border: 2px solid #667eea;
+    border: 2px solid #6c757d;
     padding: 15px 20px;
     border-radius: 12px;
     margin-bottom: 20px;
@@ -834,7 +834,7 @@ h1 {
     padding: 8px 15px;
     border: none;
     border-radius: 8px;
-    background: #667eea;
+    background: #6c757d;
     color: white;
     cursor: pointer;
     font-weight: bold;
@@ -842,7 +842,7 @@ h1 {
 }
 
 .inning-buttons button:hover:not(:disabled) {
-    background: #5a6fd6;
+    background: #5a6268;
     transform: translateY(-2px);
 }
 
@@ -882,7 +882,7 @@ h1 {
 
 /* Stats Inning Label */
 .stats-inning-label {
-    color: #667eea;
+    color: #6c757d;
     font-size: 0.8rem;
     font-weight: bold;
     margin-top: 3px;
