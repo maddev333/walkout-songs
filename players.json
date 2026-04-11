@@ -11,10 +11,10 @@
     {
       "id": 2,
       "name": "Calvin",
-      "number": "13",
+      "number": "10",
       "song": "Glory Days",
       "audioFile": "audio/glory-days.mp3",
-      "announcerFile": "announcers/player_13.wav"
+      "announcerFile": "announcers/player_10.wav"
     },
     {
       "id": 3,
