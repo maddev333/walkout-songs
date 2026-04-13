@@ -33,23 +33,23 @@ def ensure_directory(directory: str):
 
 def generate_announcer_text(player: dict) -> str:
     """
-    Generate sports announcer-style text for a player.
+    Generate Baseball announcer-style text for a player.
     
-    Creates an exciting sports announcement format like:
+    Creates an exciting professional stadium announcer, announcement format like:
     "Number [X], [Player Name]!"
     """
     name = player.get("name", "Player")
     number = player.get("number", "0")
     
     # Sports announcer style announcement
-    return f"Number {number}, {name}!"
+    return f"Now batting, Number {number}, {name}!"
 
-
+'''
 def generate_announcer_voice(
     tts_model: Qwen3TTSModel,
     text: str,
     speaker: str = "Ryan",
-    instruct: str = "Energetic sports announcer voice, excited and enthusiastic, professional stadium announcer style, deep and resonant tone, clear and powerful delivery, strong rhythmic drive"
+    instruct: str = "Energetic Baseball announcer voice, professional stadium announcer style. Needs to sound like a walkout announcer."
 ) -> tuple:
     """
     Generate announcer voice using Qwen3-TTS CustomVoice model.
@@ -71,7 +71,27 @@ def generate_announcer_voice(
         max_new_tokens=2048
     )
     return wavs, sr
-
+'''
+def generate_announcer_voice(  
+    tts_model: Qwen3TTSModel,  
+    text: str,  
+    speaker: str = "Ryan",  
+    instruct: str = (  
+        "Sound like a live ballpark batter walk out announcer." 
+        "Clear diction, dramatic pacing, emphasis on the player number and name. " 
+        "Classic professional baseball stadium announcer. "  
+        "Deep, confident, energetic public address voice. "   
+    ),  
+):  
+    """Generate announcer voice using Qwen3-TTS CustomVoice."""  
+    wavs, sr = tts_model.generate_custom_voice(  
+        text=text,  
+        language="English",  
+        speaker=speaker,  
+        instruct=instruct,  
+        max_new_tokens=4048,  
+    )  
+    return wavs, sr  
 
 def main():
     # Configuration
