@@ -72,26 +72,48 @@ def generate_announcer_voice(
     )
     return wavs, sr
 '''
-def generate_announcer_voice(  
-    tts_model: Qwen3TTSModel,  
-    text: str,  
-    speaker: str = "Ryan",  
-    instruct: str = (  
-        "Sound like a live ballpark batter walk out announcer." 
-        "Clear diction, dramatic pacing, emphasis on the player number and name. " 
-        "Classic professional baseball stadium announcer. "  
-        "Deep, confident, energetic public address voice. "   
-    ),  
-):  
-    """Generate announcer voice using Qwen3-TTS CustomVoice."""  
-    wavs, sr = tts_model.generate_custom_voice(  
-        text=text,  
-        language="English",  
-        speaker=speaker,  
-        instruct=instruct,  
-        max_new_tokens=4048,  
-    )  
-    return wavs, sr  
+def generate_announcer_voice(
+    tts_model: Qwen3TTSModel,
+    text: str,
+    speaker: str = "Ryan",
+    instruct: str = (
+        "Live ballpark batter walkout announcer with classic stadium ambiance. "
+        "Deep, resonant baritone voice with professional PA system quality. "
+        "Dramatic pause before player number, then enthusiastic delivery. "
+        "Emphasize the player number with strong rhythmic drive, player name with warm enthusiasm. "
+        "Background crowd murmur audible but not overpowering. "
+        "Broadcast radio quality clarity with stadium reverb. "
+        "Speed: Moderate pace (110-120 BPM) with deliberate pronunciation."
+    ),
+    temperature: float = 0.8,
+    length_penalty: float = 1.1,
+    max_new_tokens: int = 4096,
+) -> tuple:
+    """
+    Generate announcer voice using Qwen3-TTS CustomVoice model.
+    
+    Args:
+        tts_model: The Qwen3TTSModel instance
+        text: Text to synthesize
+        speaker: Voice speaker (Ryan is a dynamic male voice with strong rhythmic drive)
+        instruct: Voice style instruction for authentic baseball announcer sound
+        temperature: Controls randomness (0.7-0.9 recommended for natural inflection)
+        length_penalty: Controls audio duration (1.0-1.2 recommended)
+        max_new_tokens: Maximum new tokens for generation
+    
+    Returns:
+        Tuple of (waveform, sample_rate)
+    """
+    wavs, sr = tts_model.generate_custom_voice(
+        text=text,
+        language="English",
+        speaker=speaker,
+        instruct=instruct,
+        temperature=temperature,
+        length_penalty=length_penalty,
+        max_new_tokens=max_new_tokens,
+    )
+    return wavs, sr
 
 def main():
     # Configuration
@@ -130,8 +152,14 @@ def main():
         print(f"  Text: '{announcement_text}'")
         
         try:
-            # Generate voice
-            wavs, sr = generate_announcer_voice(tts, announcement_text)
+            # Generate voice with enhanced baseball announcer settings
+            wavs, sr = generate_announcer_voice(
+                tts, 
+                announcement_text,
+                speaker="Ryan",
+                temperature=0.8,
+                length_penalty=1.1
+            )
             
             # Save to file
             output_filename = f"player_{player_number}.mp3"
