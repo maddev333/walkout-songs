@@ -1256,6 +1256,460 @@ h1 {
     }
 }
 
+/* Lineup View Styles */
+.lineup-view {
+    animation: fadeIn 0.3s ease;
+}
+
+.lineup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.lineup-header h3 {
+    color: white;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.lineup-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.lineup-controls button {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#autoArrangeBtn {
+    background: #ffc107;
+    color: #333;
+}
+
+#autoArrangeBtn:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+}
+
+#saveLineupBtn {
+    background: #28a745;
+    color: white;
+}
+
+#saveLineupBtn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.lineup-info {
+    background: #e7f3ff;
+    border: 2px solid #6c757d;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.lineup-info p {
+    color: #333;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.lineup-matrix {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.matrix-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    background: #e9ecef;
+    border-radius: 10px;
+}
+
+.matrix-cell {
+    flex: 0 0 auto;
+    padding: 10px 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    border-right: 1px solid #ddd;
+}
+
+.matrix-cell:first-child {
+    flex: 1 1 auto;
+    background: #dee2e6;
+    color: #1e3c72;
+    font-size: 1.1rem;
+}
+
+.inning-header, .bench-header, .player-header {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border-radius: 8px;
+    min-width: 70px;
+}
+
+.inning-header {
+    min-width: 60px;
+}
+
+.bench-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    min-width: 70px;
+}
+
+.matrix-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.matrix-row {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.matrix-row:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    transform: translateX(5px);
+}
+
+.matrix-row.unavailable {
+    opacity: 0.6;
+    background: #f0f0f0;
+}
+
+.player-name {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-name-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-name-text {
+    font-weight: bold;
+    color: #333;
+}
+
+.player-number {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.unavailable-badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.inning-cell {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 50px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.inning-cell:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.inning-cell.playing {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+}
+
+.inning-cell.bench-cell {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.inning-cell.not-playing {
+    background: #e9ecef;
+    color: #666;
+}
+
+.inning-cell.bench-cell {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.position-badge, .bench-badge, .no-badge {
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.position-badge {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.bench-badge {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.no-badge {
+    font-size: 0.85rem;
+}
+
+.lineup-positions {
+    background: #e7f3ff;
+    border: 2px solid #6c757d;
+    padding: 15px 20px;
+    border-radius: 10px;
+}
+
+.lineup-positions h4 {
+    color: #1e3c72;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.positions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-tag {
+    background: white;
+    color: #6c757d;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border: 1px solid #6c757d;
+    cursor: default;
+    transition: all 0.2s ease;
+}
+
+.position-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.3s ease;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #6c757d;
+}
+
+.modal-header h3 {
+    color: #1e3c72;
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #6c757d;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-body {
+    padding: 10px 0;
+}
+
+.position-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.position-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.position-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+}
+
+.position-btn.bench-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.position-btn.bench-btn:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71d2a 100%);
+}
+
+.position-btn.all-innings-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.position-btn.all-innings-btn:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+}
+
+.position-btn.cancel-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.position-btn.cancel-btn:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #4e555b 100%);
+}
+
+.inning-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 8px;
+}
+
+.inning-selector span {
+    font-weight: bold;
+    color: #1e3c72;
+    margin-right: 10px;
+    min-width: 100px;
+}
+
+.inning-btn {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.inning-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bench-indicator {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 /* Small Mobile Styles */
 @media (max-width: 480px) {
     body {
@@ -1368,6 +1822,247 @@ h1 {
     
     .summary-value {
         font-size: 1.2rem;
+    }
+}
+
+/* Toast Notification System */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    padding: 14px 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    max-width: 400px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+    animation: slideInRight 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+    line-height: 1.4;
+}
+
+.toast.info {
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+}
+
+.toast.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.toast.warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.toast-benched-players {
+    display: block;
+    margin-top: 6px;
+    font-weight: normal;
+    font-size: 0.85rem;
+    opacity: 0.95;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Confirmation Modal */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    z-index: 10001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s ease;
+}
+
+.confirm-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    animation: slideDown 0.3s ease;
+}
+
+.confirm-content h3 {
+    color: #1e3c72;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.confirm-content p {
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.confirm-content ul {
+    margin: 10px 0 15px 20px;
+    color: #333;
+}
+
+.confirm-content li {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.confirm-content li.benched {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.confirm-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+#confirmOkBtn {
+    background: #28a745;
+    color: white;
+}
+
+#confirmOkBtn:hover {
+    background: #218838;
+}
+
+#confirmCancelBtn {
+    background: #6c757d;
+    color: white;
+}
+
+#confirmCancelBtn:hover {
+    background: #5a6268;
+}
+
+/* Active Roster Badge */
+.active-roster-badge {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.bench-roster-badge {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Validation Results */
+.validation-summary {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.validation-summary .inning-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.85rem;
+}
+
+.validation-summary .inning-check .check-icon {
+    font-size: 1rem;
+}
+
+.validation-summary .inning-check.valid {
+    color: #28a745;
+}
+
+.validation-summary .inning-check.invalid {
+    color: #dc3545;
+}
+
+/* Mobile Styles for Toast/Confirm Modal */
+@media (max-width: 768px) {
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .toast {
+        max-width: 100%;
+        font-size: 0.8rem;
+        padding: 10px 14px;
+    }
+    
+    .confirm-modal {
+        padding: 10px;
+    }
+    
+    .confirm-content {
+        margin: 20% auto;
+        width: 95%;
+        padding: 15px;
+    }
+    
+    .confirm-buttons {
+        flex-direction: column;
+    }
+    
+    .confirm-buttons button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .toast {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+    
+    .toast-benched-players {
+        font-size: 0.7rem;
     }
 }
 

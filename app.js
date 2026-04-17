@@ -2,6 +2,194 @@
 let players = [];
 let battingOrder = [];
 let currentPlayer = null;
+
+// ========================================
+// TOAST NOTIFICATION SYSTEM
+// ========================================
+
+function showToast(message, type = 'info', benchedPlayers = []) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let benchedHTML = '';
+    if (benchedPlayers && benchedPlayers.length > 0) {
+        benchedHTML = '<span class="toast-benched-players">⚠️ Benched: ' + benchedPlayers.map(p => p.name + ' #' + p.number).join(', ') + '</span>';
+    }
+    
+    toast.innerHTML = message + benchedHTML;
+    container.appendChild(toast);
+    
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
+}
+
+// ========================================
+// CONFIRMATION MODAL SYSTEM
+// ========================================
+
+let confirmCallback = null;
+
+function showConfirm(title, message, benchedPlayers = []) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const bodyEl = document.getElementById('confirmBody');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const closeBtn = document.getElementById('closeConfirmModal');
+        
+        titleEl.textContent = title;
+        
+        let benchedHTML = '';
+        if (benchedPlayers && benchedPlayers.length > 0) {
+            benchedHTML = '<ul>' + benchedPlayers.map(p => '<li class="benched">⚠️ ' + p.name + ' #' + p.number + ' will be moved to bench</li>').join('') + '</ul>';
+        }
+        
+        bodyEl.innerHTML = '<p>' + message + '</p>' + benchedHTML;
+        modal.style.display = 'block';
+        
+        confirmCallback = resolve;
+        
+        function cleanup() {
+            modal.style.display = 'none';
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            closeBtn.removeEventListener('click', onCancel);
+        }
+        
+        function onOk() {
+            cleanup();
+            resolve(true);
+        }
+        
+        function onCancel() {
+            cleanup();
+            resolve(false);
+        }
+        
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        closeBtn.addEventListener('click', onCancel);
+        
+        // Close on backdrop click
+        modal.addEventListener('click', function closeOnBackdrop(e) {
+            if (e.target === modal) {
+                cleanup();
+                resolve(false);
+            }
+        });
+    });
+}
+
+// ========================================
+// LINEUP VALIDATION
+// ========================================
+
+function validateLineup() {
+    const errors = [];
+    const warnings = [];
+    const inningDetails = [];
+    
+    for (let inning = 0; inning < NUM_INNINGS; inning++) {
+        let benchCount = 0;
+        let fieldPositions = [];
+        let playingPlayers = [];
+        let benchedPlayers = [];
+        
+        for (const [playerId, data] of Object.entries(playerLineup)) {
+            const player = players.find(p => p.id == playerId);
+            if (!player) continue;
+            
+            if (data.onBench[inning]) {
+                benchCount++;
+                benchedPlayers.push(player);
+            } else if (data.positions[inning]) {
+                fieldPositions.push({ player, position: data.positions[inning] });
+                playingPlayers.push(player);
+            }
+        }
+        
+        // Check for duplicate positions
+        const positionCounts = {};
+        fieldPositions.forEach(fp => {
+            positionCounts[fp.position] = (positionCounts[fp.position] || 0) + 1;
+        });
+        
+        const duplicates = Object.entries(positionCounts).filter(([pos, count]) => count > 1);
+        
+        // Check for missing positions
+        const assignedPositions = new Set(fieldPositions.map(fp => fp.position));
+        const missingPositions = POSITIONS.filter(pos => pos !== 'Bench' && !assignedPositions.has(pos));
+        
+        const inningLabel = getInningSuffix(inning + 1);
+        let status = '';
+        let isValid = true;
+        
+        if (benchCount !== 1) {
+            status = `⚠️ ${benchCount} players benched (expected 1)`;
+            isValid = false;
+            warnings.push(`Inning ${inningLabel}: ${benchCount} players benched (expected 1)`);
+        }
+        
+        if (duplicates.length > 0) {
+            const dupList = duplicates.map(([pos, count]) => `${pos} (${count} players)`).join(', ');
+            status += (status ? ' | ' : '') + `Duplicate positions: ${dupList}`;
+            isValid = false;
+            errors.push(`Inning ${inningLabel}: Duplicate positions - ${dupList}`);
+        }
+        
+        if (missingPositions.length > 0) {
+            status += (status ? ' | ' : '') + `Missing positions: ${missingPositions.join(', ')}`;
+            isValid = false;
+            errors.push(`Inning ${inningLabel}: Missing positions - ${missingPositions.join(', ')}`);
+        }
+        
+        if (isValid) {
+            status = '✅ Valid - 1 bench, 9 unique positions';
+        }
+        
+        inningDetails.push({ inning: inningLabel, valid: isValid, benchCount, fieldPositions, duplicates, benchedPlayers });
+    }
+    
+    // Check for active roster consistency
+    const activePlayers = players.filter(p => playerAvailability[p.id]);
+    const totalAssigned = players.filter(p => {
+        const data = playerLineup[p.id];
+        return data && data.positions.some(pos => pos !== null);
+    }).length;
+    
+    if (totalAssigned !== 9) {
+        warnings.push(`Only ${totalAssigned} players have positions assigned (expected 9)`);
+    }
+    
+    return { errors, warnings, inningDetails, totalAssigned, activePlayers: activePlayers.length };
+}
+
+// ========================================
+// LINEUP CONFIGURATION
+
+// Lineup configuration
+const POSITIONS = [
+    'Catcher',
+    'Pitcher',
+    '1st Base',
+    '2nd Base',
+    '3rd Base',
+    'Shortstop',
+    'Left Field',
+    'Right Field',
+    'Center Field',
+    'Bench'
+];
+const NUM_INNINGS = 5;
+const NUM_PLAYERS_ON_FIELD = 9;
+
+let playerLineup = {}; // { playerId: { positions: [posInning1, posInning2, ...], onBench: [false, false, ...] } }
 let audioPlayer = document.getElementById('audioPlayer');
 let announcerPlayer = document.getElementById('announcerPlayer');
 let playBtn = document.getElementById('playBtn');
@@ -407,10 +595,14 @@ function movePlayerInOrder(playerId, direction) {
 }
 
 // Drag and Drop handlers
-let draggedItem = null;
+let draggedPlayerId = null;
+let draggedElement = null;
+let originalBattingOrder = [];
 
 function handleDragStart(e) {
-    draggedItem = this;
+    draggedPlayerId = this.getAttribute('data-id');
+    draggedElement = this;
+    originalBattingOrder = [...battingOrder];
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', this.getAttribute('data-id'));
@@ -421,41 +613,46 @@ function handleDragEnd(e) {
     battingOrderList.querySelectorAll('.batting-order-item').forEach(item => {
         item.classList.remove('drag-over');
     });
-    draggedItem = null;
+    draggedPlayerId = null;
+    draggedElement = null;
 }
 
 function handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     
-    if (this === draggedItem) return;
+    if (this.getAttribute('data-id') === draggedPlayerId) return;
     
     const rect = this.getBoundingClientRect();
     const mouseY = e.clientY - rect.top;
     const height = rect.height;
     
     if (mouseY < height / 2) {
-        this.parentNode.insertBefore(draggedItem, this);
+        this.parentNode.insertBefore(draggedElement, this);
     } else {
-        this.parentNode.insertBefore(draggedItem, this.nextSibling);
+        this.parentNode.insertBefore(draggedElement, this.nextSibling);
     }
 }
 
 function handleDrop(e) {
     e.preventDefault();
     
-    if (!draggedItem) return;
+    if (!draggedPlayerId) return;
     
-    // Rebuild batting order from DOM
+    // If drag didn't change order, just restore original and bail
     const items = battingOrderList.querySelectorAll('.batting-order-item');
-    battingOrder = [];
+    const newOrder = [];
     items.forEach(item => {
         const playerId = parseInt(item.getAttribute('data-id'));
-        battingOrder.push(playerId);
+        newOrder.push(playerId);
     });
     
-    renderBattingOrder();
-    renderPlayerButtons();
+    // Only update if order actually changed
+    if (JSON.stringify(newOrder) !== JSON.stringify(originalBattingOrder)) {
+        battingOrder = newOrder;
+        renderBattingOrder();
+        renderPlayerButtons();
+    }
 }
 
 // Save batting order to localStorage
@@ -485,7 +682,7 @@ function loadBattingOrder() {
         }
     }
     
-    if (savedAvailability) {
+      if (savedAvailability) {
         try {
             const avail = JSON.parse(savedAvailability);
             playerAvailability = { ...playerAvailability, ...avail };
@@ -496,8 +693,14 @@ function loadBattingOrder() {
 }
 
 // Reset batting order to default (by player ID)
-function resetBattingOrder() {
-    if (confirm('Reset batting order to default (by jersey number)?')) {
+async function resetBattingOrder() {
+    const confirmed = await showConfirm(
+        'Reset Batting Order',
+        'This will reset the batting order to default and make all players available. This cannot be undone.',
+        []
+    );
+    
+    if (confirmed) {
         battingOrder = [];
         localStorage.removeItem('walkoutBattingOrder');
         
@@ -509,6 +712,9 @@ function resetBattingOrder() {
         
         renderBattingOrder();
         renderPlayerButtons();
+        showToast('Batting order reset to default.', 'success');
+    } else {
+        showToast('Reset cancelled.', 'warning');
     }
 }
 
@@ -517,6 +723,625 @@ function saveAvailability() {
     localStorage.setItem('walkoutPlayerAvailability', JSON.stringify(playerAvailability));
 }
 
+// ========================================
+// LINEUP FUNCTIONS
+// ========================================
+
+// Current player for position assignment
+let currentPlayerForPosition = null;
+let currentInningForPosition = null;
+
+// Setup lineup view
+function setupLineupView() {
+    lineupBtn.addEventListener('click', () => {
+        lineupBtn.classList.add('active');
+        songsViewBtn.classList.remove('active');
+        battingOrderBtn.classList.remove('active');
+        lineupView.style.display = 'block';
+        songsView.style.display = 'none';
+        battingOrderView.style.display = 'none';
+        renderLineupMatrix();
+    });
+    
+    setupLineupControls();
+    loadLineup();
+    setupPositionAssignment();
+}
+
+// Setup lineup controls
+function setupLineupControls() {
+    autoArrangeBtn.addEventListener('click', autoArrangeLineup);
+    document.getElementById('validateLineupBtn').addEventListener('click', validateAndShowResults);
+    saveLineupBtn.addEventListener('click', saveLineup);
+    document.getElementById('resetLineupBtn').addEventListener('click', resetLineup);
+}
+
+// Validate lineup and show results in the matrix info area
+function validateAndShowResults() {
+    const result = validateLineup();
+    
+    // Build validation HTML
+    let validationHTML = '<div class="validation-summary">';
+    
+    if (result.errors.length > 0) {
+        validationHTML += '<h4 style="color: #dc3545; margin-bottom: 10px;">❌ Errors Found</h4>';
+        result.errors.forEach(err => {
+            validationHTML += `<div class="inning-check invalid"><span class="check-icon">✗</span> ${err}</div>`;
+        });
+    }
+    
+    if (result.warnings.length > 0) {
+        validationHTML += '<h4 style="color: #ffc107; margin: 10px 0;">⚠️ Warnings</h4>';
+        result.warnings.forEach(warn => {
+            validationHTML += `<div class="inning-check invalid"><span class="check-icon">!</span> ${warn}</div>`;
+        });
+    }
+    
+    // Show per-inning breakdown
+    validationHTML += '<h4 style="color: #1e3c72; margin: 15px 0 8px 0;">📊 Inning Breakdown</h4>';
+    result.inningDetails.forEach(detail => {
+        const icon = detail.valid ? '<span class="check-icon" style="color: #28a745">✓</span>' : '<span class="check-icon" style="color: #dc3545">✗</span>';
+        let details = '';
+        
+        if (detail.benchCount === 1) {
+            details += '1 bench ✓';
+        } else {
+            details += `${detail.benchCount} benches ⚠️`;
+        }
+        
+        if (detail.duplicates && detail.duplicates.length > 0) {
+            const dupList = detail.duplicates.map(d => d[0]).join(', ');
+            details += ` | Duplicates: ${dupList}`;
+        }
+        
+        validationHTML += `<div class="inning-check ${detail.valid ? 'valid' : 'invalid'}">${icon} Inning ${detail.inning}: ${details}</div>`;
+    });
+    
+    if (result.errors.length === 0 && result.warnings.length === 0) {
+        validationHTML += '<div class="inning-check valid"><span class="check-icon">✓</span> Lineup is valid! 9 unique positions per inning, 1 bench each.</div>';
+    }
+    
+    validationHTML += '</div>';
+    
+    // Update the lineup-info area with validation results
+    const lineupInfo = document.querySelector('.lineup-info');
+    if (lineupInfo) {
+        lineupInfo.innerHTML = '<div style="margin-bottom: 8px;"><strong>🔍 Validation Results:</strong></div>' + validationHTML;
+    }
+    
+    // Show toast summary
+    if (result.errors.length > 0) {
+        showToast(`Found ${result.errors.length} error(s) in the lineup. See details below.`, 'error');
+    } else if (result.warnings.length > 0) {
+        showToast(`Lineup has ${result.warnings.length} warning(s). Check details below.`, 'warning');
+    } else {
+        showToast('✅ Lineup is valid!', 'success');
+    }
+}
+
+// Setup position assignment modal
+function setupPositionAssignment() {
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modal = document.getElementById('positionAssignmentModal');
+    const positionButtonsContainer = document.getElementById('positionButtons');
+    const inningSelector = document.createElement('div');
+    inningSelector.className = 'inning-selector';
+    
+    closeModalBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        currentPlayerForPosition = null;
+        currentInningForPosition = null;
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            currentPlayerForPosition = null;
+            currentInningForPosition = null;
+        }
+    });
+    
+    // Generate inning selector
+    inningSelector.innerHTML = '<span>Select Inning:</span>';
+    for (let i = 1; i <= NUM_INNINGS; i++) {
+        const inningBtn = document.createElement('button');
+        inningBtn.className = 'inning-btn';
+        inningBtn.textContent = i + (i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th') + ' Inning';
+        inningBtn.addEventListener('click', () => {
+            currentInningForPosition = parseInt(i);
+            inningSelector.style.display = 'none';
+            renderPositionButtons(true);
+        });
+        inningSelector.appendChild(inningBtn);
+    }
+    positionButtonsContainer.appendChild(inningSelector);
+    
+    function renderPositionButtons(fromInningSelector = false) {
+        positionButtonsContainer.innerHTML = '';
+        
+        // If the inning came from the selector, show the "Assign to Selected Inning" button
+        if (fromInningSelector && currentInningForPosition !== null) {
+            const label = getInningSuffix(currentInningForPosition);
+            const assignBtn = document.createElement('button');
+            assignBtn.className = 'position-btn select-inning-btn';
+            assignBtn.textContent = `Assign to ${label}`;
+            assignBtn.addEventListener('click', () => {
+                if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
+                    assignPositionToPlayer(currentPlayerForPosition, POSITIONS[0], false, currentInningForPosition);
+                    modal.style.display = 'none';
+                    currentPlayerForPosition = null;
+                    currentInningForPosition = null;
+                }
+            });
+            positionButtonsContainer.appendChild(assignBtn);
+        }
+        
+        // Add position buttons
+        POSITIONS.forEach(position => {
+            const btn = document.createElement('button');
+            btn.className = 'position-btn';
+            btn.textContent = position;
+            btn.addEventListener('click', () => {
+                if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
+                    assignPositionToPlayer(currentPlayerForPosition, position, false, currentInningForPosition);
+                    modal.style.display = 'none';
+                    currentPlayerForPosition = null;
+                    currentInningForPosition = null;
+                }
+            });
+            positionButtonsContainer.appendChild(btn);
+        });
+        
+        // Add "All Innings" button
+        const allInningsBtn = document.createElement('button');
+        allInningsBtn.className = 'position-btn all-innings-btn';
+        allInningsBtn.textContent = 'Assign to All Innings';
+        allInningsBtn.addEventListener('click', () => {
+            if (currentPlayerForPosition !== null) {
+                assignPositionToPlayer(currentPlayerForPosition, 'All Innings', false, null);
+                modal.style.display = 'none';
+                currentPlayerForPosition = null;
+                currentInningForPosition = null;
+            }
+        });
+        positionButtonsContainer.appendChild(allInningsBtn);
+        
+        // Add cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'position-btn cancel-btn';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            currentPlayerForPosition = null;
+            currentInningForPosition = null;
+        });
+        positionButtonsContainer.appendChild(cancelBtn);
+    }
+}
+
+// Open position assignment modal
+function openPositionAssignmentModal(playerId, inningOverride = null) {
+    const modal = document.getElementById('positionAssignmentModal');
+    const modalPlayerName = document.getElementById('modalPlayerName');
+    const positionButtonsContainer = document.getElementById('positionButtons');
+    const inningSelector = positionButtonsContainer.querySelector('.inning-selector');
+    
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+    
+    currentPlayerForPosition = playerId;
+    // Preserve the target inning if provided (e.g., from togglePlayerInInning)
+    currentInningForPosition = inningOverride;
+    
+    modalPlayerName.textContent = `${player.name} (#${player.number})`;
+    modal.style.display = 'block';
+    
+    // If an inning was already specified (e.g., from a cell click), skip the inning selector
+    if (inningOverride !== null) {
+        if (inningSelector) inningSelector.style.display = 'none';
+        renderPositionButtons(true);
+    }
+}
+
+// Load lineup from localStorage
+function loadLineup() {
+    // Reset all availability to true (Little League: everyone plays)
+    players.forEach(player => {
+        playerAvailability[player.id] = true;
+    });
+    
+    const savedLineup = localStorage.getItem('walkoutPlayerLineup');
+    if (savedLineup) {
+        try {
+            playerLineup = JSON.parse(savedLineup);
+        } catch (e) {
+            playerLineup = {};
+        }
+    } else {
+        // Initialize lineup with all players having no position
+        players.forEach(player => {
+            playerLineup[player.id] = {
+                positions: Array(NUM_INNINGS).fill(null),
+                onBench: Array(NUM_INNINGS).fill(false)
+            };
+        });
+    }
+}
+
+// Fisher-Yates shuffle helper
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Auto arrange lineup: 9 players on field (including bench position), others unavailable
+// For little league rotation system: Each inning has exactly 10 unique positions (9 fielders + 1 bench)
+async function autoArrangeLineup() {
+    // Get available players
+    const availablePlayers = players.filter(p => playerAvailability[p.id]);
+    
+    if (availablePlayers.length < NUM_PLAYERS_ON_FIELD) {
+        showToast(`Need at least ${NUM_PLAYERS_ON_FIELD} available players. You have ${availablePlayers.length}.`, 'error');
+        return;
+    }
+    
+    // Determine who will benched
+    const shuffled = shuffleArray(availablePlayers);
+    const playersOnField = shuffled.slice(0, NUM_PLAYERS_ON_FIELD);
+    const playersToBenched = availablePlayers.filter(p => !playersOnField.some(fp => fp.id === p.id));
+    
+    // Show confirmation modal before proceeding
+    const confirmed = await showConfirm(
+        '⚡ Auto Arrange Lineup',
+        'This will randomly assign 9 players to unique positions across 5 innings. The following players won\'t have positions assigned in this auto-generated lineup, but can be manually assigned later:',
+        playersToBenched
+    );
+    
+    if (!confirmed) {
+        showToast('Auto arrange cancelled.', 'warning');
+        return;
+    }
+    
+    // Clear current lineup for all players
+    // Also reset ALL player availability to true (Little League: everyone plays)
+    players.forEach(player => {
+        playerLineup[player.id] = {
+            positions: Array(NUM_INNINGS).fill(null),
+            onBench: Array(NUM_INNINGS).fill(false)
+        };
+        playerAvailability[player.id] = true;
+    });
+    
+    // For each inning, assign exactly 10 unique positions (9 fielders + 1 bench)
+    // This ensures no duplicate positions in any inning
+    for (let inning = 0; inning < NUM_INNINGS; inning++) {
+        // Create a fresh copy of all positions for this inning and shuffle them
+        const availablePositions = [...POSITIONS];
+        const shuffledPositions = shuffleArray(availablePositions);
+        
+        // Assign each player to a unique position for this inning
+        for (let playerIndex = 0; playerIndex < playersOnField.length; playerIndex++) {
+            const player = playersOnField[playerIndex];
+            const position = shuffledPositions[playerIndex];
+            
+            playerLineup[player.id].positions[inning] = position;
+            playerLineup[player.id].onBench[inning] = false;
+        }
+    }
+    
+    // Don't mark any players as unavailable - everyone plays in Little League
+    // Players not on the field for a given inning will just have no position assigned
+    // They can be manually benched via the matrix if needed
+    playersToBenched.forEach(player => {
+        playerLineup[player.id] = {
+            positions: Array(NUM_INNINGS).fill(null),
+            onBench: Array(NUM_INNINGS).fill(false)
+        };
+    });
+    
+    // Save availability and lineup
+    saveAvailability();
+    saveLineup();
+    renderLineupMatrix();
+    renderPlayerButtons();
+    
+    // Show button feedback
+    const originalText = autoArrangeBtn.innerHTML;
+    autoArrangeBtn.innerHTML = '✓ Auto Arranged!';
+    setTimeout(() => {
+        autoArrangeBtn.innerHTML = originalText;
+    }, 2000);
+    
+    // Show success toast with details
+    const activeNames = playersOnField.map(p => p.name + ' #' + p.number).join(', ');
+    showToast(
+        '✅ Auto-arrange complete! 9 players assigned to unique rotating positions across 5 innings. All other players remain available for manual assignment.',
+        'success',
+        playersToBenched
+    );
+}
+
+// Render lineup matrix
+function renderLineupMatrix() {
+    lineupMatrixContent.innerHTML = '';
+    
+    // In Little League, show ALL players in the matrix — everyone gets a turn
+    // The availability toggle doesn't hide players from the lineup
+    const sortedPlayers = getSortedPlayers();
+    
+    sortedPlayers.forEach(player => {
+        const playerData = playerLineup[player.id] || {
+            positions: Array(NUM_INNINGS).fill(null),
+            onBench: Array(NUM_INNINGS).fill(false)
+        };
+        
+        const row = document.createElement('div');
+        row.className = 'matrix-row';
+        row.setAttribute('data-player-id', player.id);
+        
+        // Determine if this player is in the active 9-man lineup or benched
+        const isInActiveRoster = playerData.positions.some(pos => pos !== null);
+        const isBenchRoster = playerData.onBench.every(b => b) && !isInActiveRoster;
+        
+        // Player name cell with click handler for manual position assignment
+        const nameCell = document.createElement('div');
+        nameCell.className = 'matrix-cell player-name';
+        nameCell.innerHTML = `
+            <div class="player-name-content">
+                <span class="player-name-text">${player.name}</span>
+                <span class="player-number">#${player.number}</span>
+                ${!playerAvailability[player.id] ? '<span class="unavailable-badge">❌ Unavailable</span>' : ''}
+                ${isInActiveRoster ? '<span class="active-roster-badge">Active Roster</span>' : ''}
+                ${isBenchRoster ? '<span class="bench-roster-badge">Bench Roster</span>' : ''}
+            </div>
+        `;
+        // Add click handler to open position assignment modal
+        nameCell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!playerAvailability[player.id]) return; // Can't assign unavailable players
+            openPositionAssignmentModal(player.id);
+        });
+        row.appendChild(nameCell);
+        
+        // Innings cells
+        for (let inning = 0; inning < NUM_INNINGS; inning++) {
+            const inningCell = document.createElement('div');
+            inningCell.className = 'matrix-cell inning-cell';
+            inningCell.setAttribute('data-inning', inning + 1);
+            inningCell.setAttribute('data-player-id', player.id);
+            
+            const onBench = playerData.onBench[inning];
+            const position = playerData.positions[inning];
+            
+            if (onBench) {
+                // Player is on bench - show bench indicator
+                inningCell.classList.add('bench-cell');
+                inningCell.innerHTML = '<span class="bench-badge">bench</span>';
+                inningCell.title = 'On bench';
+            } else if (position) {
+                // Player is playing this inning
+                inningCell.classList.add('playing');
+                inningCell.innerHTML = `<span class="position-badge">${position}</span>`;
+                inningCell.title = `Playing ${position}`;
+            } else {
+                // Player is available but not playing this inning
+                inningCell.classList.add('not-playing');
+                inningCell.innerHTML = '<span class="no-badge">-</span>';
+                inningCell.title = 'Not playing this inning';
+            }
+            
+            // Add click handler to toggle position
+            inningCell.addEventListener('click', () => togglePlayerInInning(player.id, inning + 1, inningCell));
+            row.appendChild(inningCell);
+        }
+        
+        lineupMatrixContent.appendChild(row);
+    });
+}
+
+// Toggle player position/availability in an inning
+function togglePlayerInInning(playerId, inning, cell) {
+    if (!playerAvailability[playerId]) {
+        return; // Can't modify unavailable players
+    }
+    
+    const playerData = playerLineup[playerId];
+    if (!playerData) return;
+    
+    const currentPosition = playerData.positions[inning - 1];
+    
+    // Toggle playing status
+    if (currentPosition) {
+        // Remove from playing (set to null position)
+        playerData.positions[inning - 1] = null;
+        playerData.onBench[inning - 1] = false;
+        // Re-render the entire matrix to keep DOM in sync with data
+        saveLineup();
+        renderLineupMatrix();
+    } else {
+        // Add to playing - open position assignment modal for this specific inning
+        openPositionAssignmentModal(playerId, inning);
+    }
+}
+
+// Assign position to player
+async function assignPositionToPlayer(playerId, position, force = false, inningOverride = null) {
+    const playerData = playerLineup[playerId];
+    if (!playerData) return;
+    
+    const player = players.find(p => p.id === playerId);
+    
+    // If position is 'All Innings', assign same position to all innings
+    if (position === 'All Innings') {
+        // Use the first position from current positions if available, otherwise use default
+        const firstPosition = playerData.positions[0] || 'Catcher';
+        
+        // Check for position conflicts across all innings
+        let conflictPlayer = null;
+        for (const [pid, data] of Object.entries(playerLineup)) {
+            if (parseInt(pid) !== playerId && data.positions.includes(firstPosition)) {
+                conflictPlayer = players.find(p => p.id == pid);
+                break;
+            }
+        }
+        
+        // Handle conflicts with override option
+        if (conflictPlayer && !force) {
+            // Ask user via custom confirmation modal
+            const result = await showConfirm(
+                'Position Conflict',
+                `Player "${conflictPlayer.name}" is already using ${firstPosition} (across all innings). Override and move them to bench?`,
+                [conflictPlayer]
+            );
+            
+            if (result) {
+                // User wants to override - move conflict player to bench
+                playerLineup[conflictPlayer.id].positions = Array(NUM_INNINGS).fill(null);
+                playerLineup[conflictPlayer.id].onBench = Array(NUM_INNINGS).fill(true);
+                showToast(
+                    `✅ ${player.name} assigned ${firstPosition} for all innings`,
+                    'success',
+                    [conflictPlayer]
+                );
+            } else {
+                showToast('Assignment cancelled.', 'warning');
+                return; // Cancel assignment
+            }
+        } else if (conflictPlayer && force) {
+            // Force mode - automatically override without confirmation
+            playerLineup[conflictPlayer.id].positions = Array(NUM_INNINGS).fill(null);
+            playerLineup[conflictPlayer.id].onBench = Array(NUM_INNINGS).fill(true);
+        }
+        
+        // Assign position to all innings
+        playerData.positions = Array(NUM_INNINGS).fill(firstPosition);
+        playerData.onBench = Array(NUM_INNINGS).fill(false);
+        saveLineup();
+        renderLineupMatrix();
+        return;
+    }
+    
+    // If inningOverride is null, we need to determine which inning to assign
+    if (inningOverride === null && currentInningForPosition === null) {
+        showToast('Please select an inning first.', 'error');
+        return;
+    }
+    
+    const inning = inningOverride !== null ? inningOverride : currentInningForPosition;
+    
+    // Check for position conflicts in this specific inning
+    let conflictPlayer = null;
+    for (const [pid, data] of Object.entries(playerLineup)) {
+        if (parseInt(pid) !== playerId && data.positions[inning - 1] === position && !data.onBench[inning - 1]) {
+            conflictPlayer = players.find(p => p.id == pid);
+            break;
+        }
+    }
+    
+    // Handle conflicts with override option
+    if (conflictPlayer && !force) {
+        // Ask user via custom confirmation modal
+        const result = await showConfirm(
+            'Position Conflict',
+            `${conflictPlayer.name} is already at ${position} for the ${getInningSuffix(inning)} inning. Override and move them to bench for this inning?`,
+            [conflictPlayer]
+        );
+        
+        if (result) {
+            // User wants to override - move conflict player to bench for this specific inning only
+            // (preserving their assignments in other innings)
+            playerLineup[conflictPlayer.id].onBench[inning - 1] = true;
+            playerLineup[conflictPlayer.id].positions[inning - 1] = null;
+            showToast(
+                `✅ ${player.name} assigned ${position} (Inn. ${inning})`,
+                'success',
+                [conflictPlayer]
+            );
+        } else {
+            showToast('Assignment cancelled.', 'warning');
+            return; // Cancel assignment
+        }
+    } else if (conflictPlayer && force) {
+        // Force mode - automatically override without confirmation
+        playerLineup[conflictPlayer.id].onBench[inning - 1] = true;
+        playerLineup[conflictPlayer.id].positions[inning - 1] = null;
+    }
+    
+    // Assign position to specific inning
+    playerData.positions[inning - 1] = position;
+    playerData.onBench[inning - 1] = false;
+    
+    // Ensure player is not on bench for this inning or any previous innings
+    // (they were just assigned a position)
+    for (let i = 0; i < inning; i++) {
+        playerData.onBench[i] = false;
+    }
+    
+    saveLineup();
+    renderLineupMatrix();
+}
+
+// Helper function to get inning suffix
+function getInningSuffix(inning) {
+    if (inning === 1) return '1st';
+    if (inning === 2) return '2nd';
+    if (inning === 3) return '3rd';
+    return inning + 'th';
+}
+
+// Save lineup to localStorage
+function saveLineup() {
+    localStorage.setItem('walkoutPlayerLineup', JSON.stringify(playerLineup));
+    localStorage.setItem('walkoutPlayerAvailability', JSON.stringify(playerAvailability));
+    
+    // Show confirmation
+    const originalText = saveLineupBtn.innerHTML;
+    saveLineupBtn.innerHTML = '✓ Saved!';
+    setTimeout(() => {
+        saveLineupBtn.innerHTML = originalText;
+    }, 2000);
+}
+
+// Reset lineup
+async function resetLineup() {
+    const confirmed = await showConfirm(
+        'Reset Lineup',
+        'This will reset all positions, bench assignments, and player availability to default. This cannot be undone.',
+        []
+    );
+    
+    if (confirmed) {
+        playerLineup = {};
+        players.forEach(player => {
+            playerLineup[player.id] = {
+                positions: Array(NUM_INNINGS).fill(null),
+                onBench: Array(NUM_INNINGS).fill(false)
+            };
+        });
+        // Reset availability to all true
+        players.forEach(player => {
+            playerAvailability[player.id] = true;
+        });
+        localStorage.removeItem('walkoutPlayerLineup');
+        localStorage.removeItem('walkoutPlayerAvailability');
+        saveLineup();
+        renderLineupMatrix();
+        renderPlayerButtons();
+        showToast('Lineup reset to default.', 'success');
+    } else {
+        showToast('Reset cancelled.', 'warning');
+    }
+}
+
+// ========================================
+// LINEUP STYLES (CSS) - Added to styles.css
+
 // Initialize the app
 loadPlayers();
 initAnnouncer();
+setupLineupView();

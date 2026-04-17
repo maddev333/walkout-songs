@@ -12,18 +12,84 @@
         <h1>⚾ Walkout Songs ⚾</h1>
         <p class="subtitle">Select a player to hear their walkout song!</p>
         
-               <!-- View Toggle -->
+                     <!-- View Toggle -->
         <div class="view-toggle">
             <button id="songsViewBtn" class="view-btn active">🎵 Songs View</button>
             <button id="battingOrderBtn" class="view-btn">📋 Batting Order</button>
+            <button id="lineupBtn" class="view-btn">⚾ Lineup</button>
         </div>
 
-        <!-- Global Controls -->
+               <!-- Global Controls -->
         <div class="global-controls">
             <label class="availability-control">
                 <input type="checkbox" id="showUnavailableToggle" checked>
                 <span>👁️ Show Unavailable Players</span>
             </label>
+        </div>
+
+        <!-- Lineup View -->
+        <div class="view-container lineup-view" id="lineupView" style="display: none;">
+            <div class="lineup-header">
+                <h3>⚾ Lineup Matrix</h3>
+                <div class="lineup-controls">
+                    <button id="autoArrangeBtn" title="Auto-arrange 9 players with unique positions (including bench)">⚡ Auto Arrange</button>
+                    <button id="validateLineupBtn" title="Validate lineup for errors">✅ Validate Lineup</button>
+                    <button id="saveLineupBtn" title="Save current lineup">💾 Save Lineup</button>
+                    <button id="resetLineupBtn" title="Reset lineup">🔄 Reset Lineup</button>
+                </div>
+            </div>
+            
+            <!-- Position Assignment Modal -->
+            <div id="positionAssignmentModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Assign Position</h3>
+                        <button id="closeModalBtn" class="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalPlayerName" style="font-weight: bold; margin-bottom: 15px;"></p>
+                        <p style="margin-bottom: 15px;">Select a position for this player:</p>
+                        <div id="positionButtons" class="position-buttons">
+                            <!-- Position buttons will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lineup-info">
+                <p><strong>💡 Little League Rotation Tips:</strong> All players appear in the matrix — everyone gets a turn! • Click a player name or empty cell to assign a position for a specific inning • Only 9 players on the field at a time (1 bench per inning) • Use "⚡ Auto Arrange" to randomly assign 9 players to unique positions for each inning • Use "✅ Validate Lineup" to check for duplicate positions or missing positions • Click a position to remove it, click empty to assign one</p>
+            </div>
+            
+            <div class="lineup-matrix">
+                <div class="matrix-header">
+                    <div class="matrix-cell player-header">Player</div>
+                    <div class="matrix-cell inning-header" title="1st Inning">1st</div>
+                    <div class="matrix-cell inning-header" title="2nd Inning">2nd</div>
+                    <div class="matrix-cell inning-header" title="3rd Inning">3rd</div>
+                    <div class="matrix-cell inning-header" title="4th Inning">4th</div>
+                    <div class="matrix-cell inning-header" title="5th Inning">5th</div>
+                    <div class="matrix-cell bench-header" title="Bench Players">Bench</div>
+                </div>
+                <div class="matrix-content" id="lineupMatrixContent">
+                    <!-- Matrix content will be generated here -->
+                </div>
+            </div>
+            
+            <div class="lineup-positions">
+                <h4>Available Positions</h4>
+                <div class="positions-list">
+                    <span class="position-tag" title="Catcher">Catcher</span>
+                    <span class="position-tag" title="Pitcher">Pitcher</span>
+                    <span class="position-tag" title="1st Base">1st Base</span>
+                    <span class="position-tag" title="2nd Base">2nd Base</span>
+                    <span class="position-tag" title="3rd Base">3rd Base</span>
+                    <span class="position-tag" title="Shortstop">Shortstop</span>
+                    <span class="position-tag" title="Left Field">Left Field</span>
+                    <span class="position-tag" title="Right Field">Right Field</span>
+                    <span class="position-tag" title="Center Field">Center Field</span>
+                    <span class="position-tag" title="Bench">Bench</span>
+                </div>
+            </div>
         </div>
 
         <!-- Songs View -->
@@ -80,8 +146,26 @@
             <p class="announcer-info"></p>
         </div>
 
-               <audio id="audioPlayer"></audio>
+                      <audio id="audioPlayer"></audio>
         <audio id="announcerPlayer"></audio>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm Action</h3>
+                <button id="closeConfirmModal" class="close-modal">&times;</button>
+            </div>
+            <div id="confirmBody"></div>
+            <div class="confirm-buttons">
+                <button id="confirmCancelBtn">Cancel</button>
+                <button id="confirmOkBtn">OK</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
