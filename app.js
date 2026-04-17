@@ -95,6 +95,10 @@ function validateLineup() {
     const warnings = [];
     const inningDetails = [];
     
+    // Compute active players once at the top (used inside the loop)
+    const activePlayersList = players.filter(p => playerAvailability[p.id]);
+    const activePlayerCount = activePlayersList.length;
+    
     for (let inning = 0; inning < NUM_INNINGS; inning++) {
         let benchCount = 0;
         let fieldPositions = [];
@@ -105,11 +109,15 @@ function validateLineup() {
             const player = players.find(p => p.id == playerId);
             if (!player) continue;
             
-            if (data.onBench[inning]) {
+            const position = data.positions[inning];
+            
+            if (position === 'Bench') {
+                // Player is on bench for this inning
                 benchCount++;
                 benchedPlayers.push(player);
-            } else if (data.positions[inning]) {
-                fieldPositions.push({ player, position: data.positions[inning] });
+            } else if (position) {
+                // Player is on the field
+                fieldPositions.push({ player, position });
                 playingPlayers.push(player);
             }
         }
@@ -130,10 +138,22 @@ function validateLineup() {
         let status = '';
         let isValid = true;
         
-        if (benchCount !== 1) {
-            status = `⚠️ ${benchCount} players benched (expected 1)`;
+        // Calculate expected bench count: all available players minus 9 fielders
+        const expectedBenchCount = Math.max(0, activePlayerCount - NUM_PLAYERS_ON_FIELD);
+        
+        if (benchCount !== expectedBenchCount) {
+            status = `⚠️ ${benchCount} players benched (expected ${expectedBenchCount})`;
             isValid = false;
-            warnings.push(`Inning ${inningLabel}: ${benchCount} players benched (expected 1)`);
+            warnings.push(`Inning ${inningLabel}: ${benchCount} players benched (expected ${expectedBenchCount})`);
+        }
+        
+        // Check that all available players have a position each inning (field or Bench)
+        const totalAssignedPlayers = fieldPositions.length + benchCount;
+        if (totalAssignedPlayers < activePlayerCount) {
+            const unassigned = activePlayerCount - totalAssignedPlayers;
+            status += (status ? ' | ' : '') + `⚠️ ${unassigned} available player(s) without a position assignment`;
+            warnings.push(`Inning ${inningLabel}: ${unassigned} available player(s) not assigned a position`);
+            isValid = false;
         }
         
         if (duplicates.length > 0) {
@@ -150,7 +170,7 @@ function validateLineup() {
         }
         
         if (isValid) {
-            status = '✅ Valid - 1 bench, 9 unique positions';
+            status = `✅ Valid - ${benchCount} bench, 9 unique field positions`;
         }
         
         inningDetails.push({ inning: inningLabel, valid: isValid, benchCount, fieldPositions, duplicates, benchedPlayers });
@@ -798,7 +818,7 @@ function validateAndShowResults() {
     });
     
     if (result.errors.length === 0 && result.warnings.length === 0) {
-        validationHTML += '<div class="inning-check valid"><span class="check-icon">✓</span> Lineup is valid! 9 unique positions per inning, 1 bench each.</div>';
+        validationHTML += '<div class="inning-check valid"><span class="check-icon">✓</span> Lineup is valid! All available players assigned each inning, 9 unique field positions.</div>';
     }
     
     validationHTML += '</div>';
@@ -893,20 +913,6 @@ function setupPositionAssignment() {
             positionButtonsContainer.appendChild(btn);
         });
         
-        // Add "All Innings" button
-        const allInningsBtn = document.createElement('button');
-        allInningsBtn.className = 'position-btn all-innings-btn';
-        allInningsBtn.textContent = 'Assign to All Innings';
-        allInningsBtn.addEventListener('click', () => {
-            if (currentPlayerForPosition !== null) {
-                assignPositionToPlayer(currentPlayerForPosition, 'All Innings', false, null);
-                modal.style.display = 'none';
-                currentPlayerForPosition = null;
-                currentInningForPosition = null;
-            }
-        });
-        positionButtonsContainer.appendChild(allInningsBtn);
-        
         // Add cancel button
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'position-btn cancel-btn';
@@ -979,8 +985,8 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-// Auto arrange lineup: 9 players on field (including bench position), others unavailable
-// For little league rotation system: Each inning has exactly 10 unique positions (9 fielders + 1 bench)
+// Auto arrange lineup: All available players must play each inning
+// For little league rotation system: 9 players on field, rest on bench, everyone assigned a position each inning
 async function autoArrangeLineup() {
     // Get available players
     const availablePlayers = players.filter(p => playerAvailability[p.id]);
@@ -990,16 +996,11 @@ async function autoArrangeLineup() {
         return;
     }
     
-    // Determine who will benched
-    const shuffled = shuffleArray(availablePlayers);
-    const playersOnField = shuffled.slice(0, NUM_PLAYERS_ON_FIELD);
-    const playersToBenched = availablePlayers.filter(p => !playersOnField.some(fp => fp.id === p.id));
-    
     // Show confirmation modal before proceeding
     const confirmed = await showConfirm(
         '⚡ Auto Arrange Lineup',
-        'This will randomly assign 9 players to unique positions across 5 innings. The following players won\'t have positions assigned in this auto-generated lineup, but can be manually assigned later:',
-        playersToBenched
+        'This will randomly assign all available players to positions across 5 innings. Each inning, 9 players will play field positions and the rest will be on bench. Over 5 innings, everyone gets a chance to play.',
+        []
     );
     
     if (!confirmed) {
@@ -1017,32 +1018,32 @@ async function autoArrangeLineup() {
         playerAvailability[player.id] = true;
     });
     
-    // For each inning, assign exactly 10 unique positions (9 fielders + 1 bench)
-    // This ensures no duplicate positions in any inning
+    // Field positions only (exclude Bench from the field positions)
+    const fieldPositions = POSITIONS.filter(p => p !== 'Bench'); // 9 field positions
+    
+    // For each inning, assign all available players to positions
+    // 9 get field positions, rest get 'Bench'
     for (let inning = 0; inning < NUM_INNINGS; inning++) {
-        // Create a fresh copy of all positions for this inning and shuffle them
-        const availablePositions = [...POSITIONS];
-        const shuffledPositions = shuffleArray(availablePositions);
+        // Get all available players and shuffle them for this inning
+        const allAvailablePlayers = shuffleArray(players.filter(p => playerAvailability[p.id]));
         
-        // Assign each player to a unique position for this inning
-        for (let playerIndex = 0; playerIndex < playersOnField.length; playerIndex++) {
-            const player = playersOnField[playerIndex];
-            const position = shuffledPositions[playerIndex];
-            
-            playerLineup[player.id].positions[inning] = position;
+        // Shuffle field positions for variety
+        const shuffledFieldPositions = shuffleArray([...fieldPositions]);
+        
+        // Assign first 9 players to field positions
+        for (let i = 0; i < Math.min(NUM_PLAYERS_ON_FIELD, allAvailablePlayers.length); i++) {
+            const player = allAvailablePlayers[i];
+            playerLineup[player.id].positions[inning] = shuffledFieldPositions[i];
             playerLineup[player.id].onBench[inning] = false;
         }
+        
+        // Assign remaining players to 'Bench' position
+        for (let i = NUM_PLAYERS_ON_FIELD; i < allAvailablePlayers.length; i++) {
+            const player = allAvailablePlayers[i];
+            playerLineup[player.id].positions[inning] = 'Bench';
+            playerLineup[player.id].onBench[inning] = true;
+        }
     }
-    
-    // Don't mark any players as unavailable - everyone plays in Little League
-    // Players not on the field for a given inning will just have no position assigned
-    // They can be manually benched via the matrix if needed
-    playersToBenched.forEach(player => {
-        playerLineup[player.id] = {
-            positions: Array(NUM_INNINGS).fill(null),
-            onBench: Array(NUM_INNINGS).fill(false)
-        };
-    });
     
     // Save availability and lineup
     saveAvailability();
@@ -1057,12 +1058,9 @@ async function autoArrangeLineup() {
         autoArrangeBtn.innerHTML = originalText;
     }, 2000);
     
-    // Show success toast with details
-    const activeNames = playersOnField.map(p => p.name + ' #' + p.number).join(', ');
     showToast(
-        '✅ Auto-arrange complete! 9 players assigned to unique rotating positions across 5 innings. All other players remain available for manual assignment.',
-        'success',
-        playersToBenched
+        '✅ Auto-arrange complete! All ' + availablePlayers.length + ' players assigned to positions across 5 innings. 9 fielders + (availablePlayers.length - 9) on bench each inning.',
+        'success'
     );
 }
 
@@ -1115,21 +1113,20 @@ function renderLineupMatrix() {
             inningCell.setAttribute('data-inning', inning + 1);
             inningCell.setAttribute('data-player-id', player.id);
             
-            const onBench = playerData.onBench[inning];
             const position = playerData.positions[inning];
             
-            if (onBench) {
-                // Player is on bench - show bench indicator
+            if (position === 'Bench') {
+                // Player is on bench for this inning
                 inningCell.classList.add('bench-cell');
                 inningCell.innerHTML = '<span class="bench-badge">bench</span>';
                 inningCell.title = 'On bench';
             } else if (position) {
-                // Player is playing this inning
+                // Player is playing this inning at a field position
                 inningCell.classList.add('playing');
                 inningCell.innerHTML = `<span class="position-badge">${position}</span>`;
                 inningCell.title = `Playing ${position}`;
             } else {
-                // Player is available but not playing this inning
+                // No position assigned — not playing this inning
                 inningCell.classList.add('not-playing');
                 inningCell.innerHTML = '<span class="no-badge">-</span>';
                 inningCell.title = 'Not playing this inning';
@@ -1157,9 +1154,9 @@ function togglePlayerInInning(playerId, inning, cell) {
     
     // Toggle playing status
     if (currentPosition) {
-        // Remove from playing (set to null position)
-        playerData.positions[inning - 1] = null;
-        playerData.onBench[inning - 1] = false;
+        // Remove from playing — set bench position for this inning only
+        // In Little League, bench is per-inning, not permanent
+        playerData.positions[inning - 1] = 'Bench';
         // Re-render the entire matrix to keep DOM in sync with data
         saveLineup();
         renderLineupMatrix();
@@ -1237,7 +1234,7 @@ async function assignPositionToPlayer(playerId, position, force = false, inningO
     // Check for position conflicts in this specific inning
     let conflictPlayer = null;
     for (const [pid, data] of Object.entries(playerLineup)) {
-        if (parseInt(pid) !== playerId && data.positions[inning - 1] === position && !data.onBench[inning - 1]) {
+        if (parseInt(pid) !== playerId && data.positions[inning - 1] === position) {
             conflictPlayer = players.find(p => p.id == pid);
             break;
         }
@@ -1255,8 +1252,7 @@ async function assignPositionToPlayer(playerId, position, force = false, inningO
         if (result) {
             // User wants to override - move conflict player to bench for this specific inning only
             // (preserving their assignments in other innings)
-            playerLineup[conflictPlayer.id].onBench[inning - 1] = true;
-            playerLineup[conflictPlayer.id].positions[inning - 1] = null;
+            playerLineup[conflictPlayer.id].positions[inning - 1] = 'Bench';
             showToast(
                 `✅ ${player.name} assigned ${position} (Inn. ${inning})`,
                 'success',
@@ -1268,19 +1264,11 @@ async function assignPositionToPlayer(playerId, position, force = false, inningO
         }
     } else if (conflictPlayer && force) {
         // Force mode - automatically override without confirmation
-        playerLineup[conflictPlayer.id].onBench[inning - 1] = true;
-        playerLineup[conflictPlayer.id].positions[inning - 1] = null;
+        playerLineup[conflictPlayer.id].positions[inning - 1] = 'Bench';
     }
     
     // Assign position to specific inning
     playerData.positions[inning - 1] = position;
-    playerData.onBench[inning - 1] = false;
-    
-    // Ensure player is not on bench for this inning or any previous innings
-    // (they were just assigned a position)
-    for (let i = 0; i < inning; i++) {
-        playerData.onBench[i] = false;
-    }
     
     saveLineup();
     renderLineupMatrix();
