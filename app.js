@@ -16,6 +16,21 @@ const POSITIONS = [
     'Center Field',
     'Bench'
 ];
+
+// Position abbreviations for compact display in the matrix
+const POSITION_ABBREVS = {
+    'Catcher': 'C',
+    'Pitcher': 'P',
+    '1st Base': '1B',
+    '2nd Base': '2B',
+    '3rd Base': '3B',
+    'Shortstop': 'SS',
+    'Left Field': 'LF',
+    'Right Field': 'RF',
+    'Center Field': 'CF',
+    'Bench': 'BN'
+};
+
 const NUM_INNINGS = 5;
 const NUM_PLAYERS_ON_FIELD = 9;
 const FIELD_POSITIONS = POSITIONS.filter(p => p !== 'Bench');
@@ -1140,18 +1155,19 @@ function renderLineupMatrix() {
             if (position === 'Bench') {
                 // Player is on bench for this inning
                 inningCell.classList.add('bench-cell');
-                inningCell.innerHTML = '<span class="bench-badge">bench</span>';
-                inningCell.title = 'On bench' + (lockedInnings.has(inning) ? ' (LOCKED)' : '');
+                inningCell.innerHTML = '<span class="bench-badge">BN</span>';
+                inningCell.title = `On Bench${(lockedInnings.has(inning) ? ' (LOCKED)' : '')}`;
             } else if (position) {
                 // Player is playing this inning at a field position
                 inningCell.classList.add('playing');
-                inningCell.innerHTML = `<span class="position-badge">${position}</span>`;
-                inningCell.title = `Playing ${position}` + (lockedInnings.has(inning) ? ' (LOCKED)' : '');
+                const abbr = POSITION_ABBREVS[position] || position;
+                inningCell.innerHTML = `<span class="position-badge">${abbr}</span>`;
+                inningCell.title = `${position} (Inning ${inning + 1})${(lockedInnings.has(inning) ? ' (LOCKED)' : '')}`;
             } else {
                 // No position assigned — not playing this inning
                 inningCell.classList.add('not-playing');
-                inningCell.innerHTML = '<span class="no-badge">-</span>';
-                inningCell.title = 'Not playing this inning' + (lockedInnings.has(inning) ? ' (LOCKED)' : '');
+                inningCell.innerHTML = '<span class="no-badge">–</span>';
+                inningCell.title = `No position assigned (Inning ${inning + 1})${(lockedInnings.has(inning) ? ' (LOCKED)' : '')}`;
             }
             
             // Add click handler to toggle position
@@ -1166,7 +1182,13 @@ function renderLineupMatrix() {
         for (let i = 0; i < NUM_INNINGS; i++) {
             if (playerData.positions[i] === 'Bench') benchCount++;
         }
-        benchCell.innerHTML = benchCount > 0 ? `<span class="bench-badge">${benchCount}</span>` : '<span class="no-badge">-</span>';
+        if (benchCount > 0) {
+            benchCell.innerHTML = `<span class="bench-badge">${benchCount} BN</span>`;
+            benchCell.title = `Benched ${benchCount} time(s)`;
+        } else {
+            benchCell.innerHTML = '<span class="no-badge">–</span>';
+            benchCell.title = 'Never benched';
+        }
         row.appendChild(benchCell);
         
         lineupMatrixContent.appendChild(row);

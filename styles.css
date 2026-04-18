@@ -1435,35 +1435,48 @@ h1 {
 
 .matrix-cell {
     flex: 0 0 auto;
-    padding: 10px 15px;
+    padding: 12px 10px;
     text-align: center;
     font-weight: bold;
     color: #333;
-    border-right: 1px solid #ddd;
+    border-right: 2px solid #e0e0e0;
+    font-size: 0.85rem;
 }
 
 .matrix-cell:first-child {
-    flex: 1 1 auto;
-    background: #dee2e6;
+    flex: 0 0 auto;
+    min-width: 160px;
+    max-width: 220px;
+    background: #f0f4f8;
     color: #1e3c72;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    padding: 12px 14px;
+    border-right: 3px solid #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .inning-header, .bench-header, .player-header {
     background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     border-radius: 8px;
-    min-width: 70px;
+    min-width: 90px;
+    font-size: 0.9rem;
+    padding: 12px 8px;
 }
 
 .inning-header {
-    min-width: 60px;
+    min-width: 90px;
+    font-weight: bold;
 }
 
 .bench-header {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
-    min-width: 70px;
+    min-width: 80px;
+    font-weight: bold;
+    font-size: 0.95rem;
 }
 
 .matrix-content {
@@ -1475,22 +1488,32 @@ h1 {
     display: flex;
     align-items: center;
     background: white;
-    padding: 10px 15px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    padding: 12px 15px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
     cursor: pointer;
+    gap: 4px;
 }
 
 .matrix-row:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateX(5px);
 }
 
 .matrix-row.unavailable {
     opacity: 0.6;
     background: #f0f0f0;
+}
+
+/* Alternate row colors for easier reading */
+.matrix-row:nth-child(even) {
+    background: #fafbfc;
+}
+
+.matrix-row:nth-child(even):hover {
+    background: #f0f4f8;
 }
 
 .player-name {
@@ -1530,62 +1553,92 @@ h1 {
 
 .inning-cell {
     flex: 0 0 auto;
-    padding: 8px 12px;
+    padding: 10px 8px;
     text-align: center;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 50px;
-    height: 35px;
+    min-width: 80px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    font-size: 0.8rem;
 }
 
 .inning-cell:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
 }
 
 .inning-cell.playing {
     background: linear-gradient(135deg, #28a745 0%, #218838 100%);
     color: white;
+    font-weight: bold;
 }
 
 .inning-cell.bench-cell {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
+    font-weight: bold;
 }
 
 .inning-cell.not-playing {
-    background: #e9ecef;
-    color: #666;
+    background: #f8f9fa;
+    color: #adb5bd;
+    border: 2px dashed #dee2e6;
 }
 
-.inning-cell.bench-cell {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
+.inning-cell.playing .position-badge {
+    font-size: 0.82rem;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.inning-cell.bench-cell .bench-badge {
+    font-size: 0.82rem;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.inning-cell.not-playing .no-badge {
+    font-size: 1.2rem;
+    color: #ced4da;
 }
 
 .position-badge, .bench-badge, .no-badge {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 3px 6px;
+    border-radius: 5px;
     display: inline-block;
 }
 
 .position-badge {
     background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 .bench-badge {
     background: rgba(255, 255, 255, 0.3);
+    color: white;
 }
 
 .no-badge {
-    font-size: 0.85rem;
+    font-size: 1rem;
+    color: #adb5bd;
+}
+
+/* Scroll hint for when matrix overflows on any screen size */
+.lineup-matrix {
+    position: relative;
 }
 
 .lineup-positions {
@@ -2151,7 +2204,7 @@ h1 {
 }
 
 /* Landscape Mobile */
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-width: 768px) and (orientation: landscape) { 
     .container {
         max-width: 100%;
         padding: 10px;
@@ -2164,5 +2217,259 @@ h1 {
     .header-image {
         max-width: 200px;
         margin-bottom: 10px;
+    }
+}
+
+/* ========================================
+   MOBILE RESPONSIVE - LINEUP MATRIX
+   ======================================== */
+
+@media (max-width: 768px) {
+    .lineup-matrix {
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .matrix-header {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        min-width: 700px;
+        gap: 2px;
+    }
+    
+    .matrix-cell {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .matrix-cell:first-child {
+        min-width: 120px;
+        max-width: 150px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .inning-header, .bench-header {
+        min-width: 70px;
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .matrix-row {
+        padding: 8px 10px;
+        gap: 2px;
+        min-width: 700px;
+    }
+    
+    .inning-cell {
+        padding: 6px 4px;
+        min-width: 65px;
+        height: 36px;
+        font-size: 0.72rem;
+    }
+    
+    .inning-cell.playing .position-badge,
+    .inning-cell.bench-cell .bench-badge {
+        font-size: 0.72rem;
+        padding: 3px 5px;
+    }
+    
+    .inning-cell.not-playing .no-badge {
+        font-size: 1rem;
+    }
+    
+    .position-badge, .bench-badge, .no-badge {
+        font-size: 0.72rem;
+        padding: 2px 4px;
+        border-radius: 4px;
+    }
+    
+    .lineup-header {
+        padding: 12px 15px;
+    }
+    
+    .lineup-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .lineup-controls {
+        gap: 8px;
+    }
+    
+    .lineup-controls button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .lineup-info {
+        padding: 12px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .lineup-positions {
+        padding: 12px 15px;
+    }
+    
+    .position-tag {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .inning-lock-controls {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        gap: 10px;
+    }
+    
+    .inning-lock-btn {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    /* Ensure the matrix scrolls smoothly */
+    .lineup-matrix::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .lineup-matrix::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .lineup-matrix::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .lineup-matrix::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Add scroll hint for users */
+    .lineup-matrix {
+        position: relative;
+    }
+    
+    .lineup-matrix::after {
+        content: '→ Scroll for more columns';
+        position: absolute;
+        right: 20px;
+        bottom: 8px;
+        font-size: 0.75rem;
+        color: #6c757d;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 4px 10px;
+        border-radius: 4px;
+        pointer-events: none;
+        opacity: 0.8;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .lineup-matrix {
+        padding: 8px;
+        margin: 0 -15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .matrix-header {
+        min-width: 650px;
+        padding: 6px 8px;
+    }
+    
+    .matrix-cell {
+        padding: 6px 4px;
+        font-size: 0.7rem;
+    }
+    
+    .matrix-cell:first-child {
+        min-width: 100px;
+        max-width: 130px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .inning-header, .bench-header {
+        min-width: 60px;
+        padding: 6px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .matrix-row {
+        padding: 6px 8px;
+        min-width: 650px;
+    }
+    
+    .inning-cell {
+        padding: 5px 3px;
+        min-width: 58px;
+        height: 32px;
+        font-size: 0.68rem;
+    }
+    
+    .inning-cell.playing .position-badge,
+    .inning-cell.bench-cell .bench-badge {
+        font-size: 0.68rem;
+        padding: 2px 4px;
+    }
+    
+    .position-badge, .bench-badge, .no-badge {
+        font-size: 0.68rem;
+        padding: 2px 3px;
+    }
+    
+    .lineup-header {
+        padding: 10px 12px;
+    }
+    
+    .lineup-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .lineup-controls {
+        gap: 6px;
+    }
+    
+    .lineup-controls button {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .inning-lock-controls {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .inning-lock-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .lineup-matrix::after {
+        font-size: 0.7rem;
+        right: 15px;
+        bottom: 6px;
+    }
+}
+
+/* Tablet - wider screens where matrix should be more comfortable */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .matrix-cell:first-child {
+        min-width: 140px;
+        max-width: 180px;
+    }
+    
+    .inning-cell {
+        min-width: 75px;
+    }
+    
+    .inning-header, .bench-header {
+        min-width: 80px;
     }
 }
