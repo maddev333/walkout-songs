@@ -1326,6 +1326,90 @@ h1 {
     text-align: center;
 }
 
+/* Inning Lock Controls */
+.inning-lock-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    flex-wrap: wrap;
+}
+
+.inning-lock-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.inning-lock-btn {
+    padding: 6px 14px;
+    border: 2px solid #6c757d;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.inning-lock-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.inning-lock-btn.locked {
+    background: #28a745;
+    color: white;
+    border-color: #218838;
+}
+
+.inning-lock-btn.locked:hover {
+    background: #218838;
+}
+
+.inning-lock-btn.locked::before {
+    content: '🔒 ';
+}
+
+.inning-lock-btn:not(.locked)::before {
+    content: '🔓 ';
+}
+
+/* Locked inning indicator in matrix */
+.inning-cell.locked-inning {
+    position: relative;
+}
+
+.inning-cell.locked-inning::after {
+    content: '🔒';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 0.65rem;
+    background: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Locked inning header */
+.inning-header.locked {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.inning-header.locked::after {
+    content: ' 🔒';
+}
+
 .lineup-info p {
     color: #333;
     font-size: 0.95rem;

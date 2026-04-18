@@ -38,6 +38,17 @@
                     <button id="resetLineupBtn" title="Reset lineup">🔄 Reset Lineup</button>
                 </div>
             </div>
+
+            <!-- Inning Lock Controls -->
+            <div class="inning-lock-controls">
+                <span style="font-weight: bold; color: #1e3c72; margin-right: 10px;">🔒 Inning Status:</span>
+                <span style="font-size: 0.85rem; color: #666; margin-right: 15px;">Click to lock/unlock innings that have been played.</span>
+                <div id="inningLockButtons" class="inning-lock-buttons">
+                    <!-- Generated dynamically -->
+                </div>
+                <button id="lockAllInningsBtn" title="Lock all innings" style="margin-left: 15px; padding: 4px 12px; font-size: 0.85rem; border: 1px solid #6c757d; border-radius: 6px; background: white; cursor: pointer; font-weight: bold;">🔒 Lock All</button>
+                <button id="unlockAllInningsBtn" title="Unlock all innings" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #6c757d; border-radius: 6px; background: white; cursor: pointer; font-weight: bold;">🔓 Unlock All</button>
+            </div>
             
             <!-- Position Assignment Modal -->
             <div id="positionAssignmentModal" class="modal" style="display: none;">
@@ -57,7 +68,7 @@
             </div>
             
             <div class="lineup-info">
-                <p><strong>💡 Little League Rotation Tips:</strong> All players appear in the matrix — everyone gets a turn! • Click a player name or empty cell to assign a position for a specific inning • Only 9 players on the field at a time (1 bench per inning) • Use "⚡ Auto Arrange" to randomly assign 9 players to unique positions for each inning • Use "✅ Validate Lineup" to check for duplicate positions or missing positions • Click a position to remove it, click empty to assign one</p>
+                <p><strong>💡 Little League Rotation Tips:</strong> All players appear in the matrix — everyone gets a turn! • Click a player name or empty cell to assign a position for a specific inning • Only 9 players on the field at a time (1 bench per inning) • <strong>Lock innings after they're played</strong> so auto-arrange preserves them • Use "⚡ Auto Arrange" to assign positions — it avoids repeating same positions consecutive innings • Use "✅ Validate Lineup" to check for duplicate positions or missing positions</p>
             </div>
             
             <div class="lineup-matrix">
