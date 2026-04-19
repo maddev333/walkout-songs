@@ -42,7 +42,7 @@ def generate_announcer_text(player: dict) -> str:
     number = player.get("number", "0")
     
     # Sports announcer style announcement
-    return f"Now batting, Number {number}, {name}!"
+    return f"Now batting for the Grey Devils, Number {number}, {name}!"
 
 '''
 def generate_announcer_voice(

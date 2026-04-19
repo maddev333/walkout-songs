@@ -68,6 +68,12 @@ let playerAvailability = {}; // Object to track which players are available (tru
 let announcerEnabled = true;
 let announcerVolume = 1.0;
 
+// Web Audio API variables for cross-fading
+let audioCtx = null;
+let songGainNode = null;
+let songSource = null;
+let fadeTimeout = null;
+
 // ========================================
 // TOAST NOTIFICATION SYSTEM
 // ========================================
@@ -1994,6 +2000,19 @@ function selectPlayer(player) {
 // Play audio
 function playAudio() {
     if (currentPlayer) {
+        // Connect the audio element's source to the Web Audio API gain node
+        if (audioCtx && !songSource) {
+            try {
+                songSource = audioCtx.createMediaElementSource(audioPlayer);
+                songSource.connect(songGainNode);
+            } catch (e) {
+                // Source already connected, ignore
+                if (e.name !== 'NotSupportedError') {
+                    console.warn('Media element source already connected:', e);
+                }
+            }
+        }
+        
         audioPlayer.play().catch(error => {
             console.error('Error playing audio:', error);
             alert('Please place your audio files in the "audio" folder. Check the README for setup instructions.');
@@ -2005,6 +2024,7 @@ function playAudio() {
 
 // Pause audio
 function pauseAudio() {
+    cancelCrossFade();
     audioPlayer.pause();
     pauseBtn.disabled = true;
     playBtn.disabled = false;
@@ -2012,8 +2032,14 @@ function pauseAudio() {
 
 // Stop audio
 function stopAudio() {
+    cancelCrossFade();
     audioPlayer.pause();
     audioPlayer.currentTime = 0;
+    // Reset gain to 0
+    if (songGainNode && audioCtx) {
+        songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    }
     pauseBtn.disabled = true;
     playBtn.disabled = false;
 }
@@ -2050,16 +2076,95 @@ function initAnnouncer() {
     // Set initial volume
     announcerPlayer.volume = announcerVolume;
     
-    // Handle announcer audio ended - play the song after announcement
-    announcerPlayer.addEventListener('ended', () => {
-        if (currentPlayer) {
-            playAudio();
-        }
-    });
+ 
+}
+
+// ========================================
+// CROSS-FADE AUDIO (Web Audio API)
+// ========================================
+
+/**
+ * Initialize Web Audio API context and set up gain nodes for cross-fading.
+ */
+function initAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create a gain node for the song (walkout music)
+        songGainNode = audioCtx.createGain();
+        songGainNode.connect(audioCtx.destination);
+        
+        // Start with song at 0 volume
+        songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    }
+}
+
+/**
+ * Start cross-fading: fade song in while announcer plays, then fade song out after 10s.
+ */
+function startCrossFade() {
+    if (!currentPlayer) return;
+    
+    initAudioContext();
+    
+    // Resume AudioContext if suspended (browser policy)
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    
+    const FADE_IN_DURATION = 9.5; // seconds to fade song in
+    const FADE_OUT_DURATION = 3.0; // seconds to fade song out after 10s
+    
+    // Set song gain to 0 at the start
+    const now = audioCtx.currentTime;
+    songGainNode.gain.setValueAtTime(0, now);
+    
+    // Fade song in from 0 to full volume over FADE_IN_DURATION seconds
+    songGainNode.gain.linearRampToValueAtTime(1, now + FADE_IN_DURATION);
+    
+    // After 10 seconds + fade-in, schedule fade-out
+    const fadeOutStartTime = now + FADE_IN_DURATION + 10;
+    songGainNode.gain.setValueAtTime(1, fadeOutStartTime);
+    songGainNode.gain.linearRampToValueAtTime(0, fadeOutStartTime + FADE_OUT_DURATION);
+    
+    // Clear any previous timeout to avoid multiple schedules
+    if (fadeTimeout) {
+        clearTimeout(fadeTimeout);
+    }
+    
+    // Schedule cleanup after fade-out completes: stop the song and reset gain
+    const totalTime = FADE_IN_DURATION + 10 + FADE_OUT_DURATION;
+    fadeTimeout = setTimeout(() => {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    }, totalTime * 1000);
+    
+    // Start the song playing (song will be at 0 volume and fade in)
+    playAudio();
+}
+
+/**
+ * Cancel any active cross-fade and reset song gain to 0.
+ */
+function cancelCrossFade() {
+    if (fadeTimeout) {
+        clearTimeout(fadeTimeout);
+        fadeTimeout = null;
+    }
+    if (songGainNode && audioCtx) {
+        const now = audioCtx.currentTime;
+        songGainNode.gain.cancelScheduledValues(now);
+        songGainNode.gain.setValueAtTime(0, now);
+    }
 }
 
 // Announce player name and number, then play song
 function announceAndPlay(player) {
+    // Cancel any active cross-fade from a previous selection
+    cancelCrossFade();
+    
     if (announcerEnabled) {
         // Stop any ongoing announcer audio
         announcerPlayer.pause();
@@ -2076,14 +2181,16 @@ function announceAndPlay(player) {
         announcerPlayer.src = announcerSrc;
         announcerPlayer.volume = announcerVolume;
         
-        // Try to play the announcer audio
-        announcerPlayer.play().catch(error => {
+        // When announcer ends, start cross-fade so the song fades in after the announcement
+        announcerPlayer.onended = () => startCrossFade();
+        
+        // If the announcer file doesn't exist, play the song directly
+        announcerPlayer.play().catch((error) => {
             console.warn(`Announcer audio not found for player ${player.name}: ${announcerSrc}. Playing song directly.`);
-            // If announcer file doesn't exist, just play the song
             playAudio();
         });
     } else {
-        // Just play the song directly
+        // Just play the song directly (no cross-fade)
         playAudio();
     }
 }
