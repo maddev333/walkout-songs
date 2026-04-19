@@ -363,8 +363,10 @@ function scorePositionAssignments(allInningsAssignments) {
  * @param {number} numInnings - Number of innings to generate assignments for.
  * @param {Set<number>} [playersWhoCannotBench] - Players who have already benched in locked innings
  *                                                 and should NOT be benched again.
+ * @param {Object} [previousInningPositions] - Positions from the last locked inning (before the
+ *                                               first unlocked inning). Maps playerId -> position.
  */
-function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCannotBench = new Set()) {
+function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCannotBench = new Set(), previousInningPositions = null) {
     const fieldOnly = POSITIONS.filter(p => p !== 'Bench');
     // Calculate bench spots from ALL available players, not just those who can still bench
     const numBenchPerInning = Math.max(0, allAvailablePlayerIds.length - NUM_PLAYERS_ON_FIELD);
@@ -434,6 +436,32 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
         allInningsAssignments.push(assignment);
     }
     
+    // Fix the boundary between the last locked inning and the first unlocked inning:
+    // if a player is on the field in both, make sure they don't have the same position.
+    if (previousInningPositions) {
+        for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+            const firstUnlockedPos = allInningsAssignments[0][playerId];
+            if (prevPos && prevPos !== 'Bench' && firstUnlockedPos && firstUnlockedPos !== 'Bench' && prevPos === firstUnlockedPos) {
+                // Need to swap this player's position in the first unlocked inning.
+                const otherPositions = fieldOnly.filter(p => p !== prevPos);
+                if (otherPositions.length > 0) {
+                    // Find who holds the target position in the first unlocked inning
+                    const targetPos = otherPositions[Math.floor(Math.random() * otherPositions.length)];
+                    const occupant = Object.entries(allInningsAssignments[0]).find(
+                        ([pid, pos]) => pos === targetPos && pid !== playerId
+                    );
+                    if (occupant) {
+                        const occupantId = occupant[0];
+                        allInningsAssignments[0][playerId] = targetPos;
+                        allInningsAssignments[0][occupantId] = prevPos;
+                    } else {
+                        allInningsAssignments[0][playerId] = targetPos;
+                    }
+                }
+            }
+        }
+    }
+    
     // ─── Iterative improvement for position variety ───
     // Swap positions between consecutive innings to reduce same-position repeats.
     // Bench assignments stay untouched (already satisfy the constraint).
@@ -441,10 +469,27 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
     let bestAssignments = JSON.parse(JSON.stringify(allInningsAssignments));
     let bestScore = scorePositionAssignments(bestAssignments);
     
+    // If there's a previous locked inning, score the boundary too.
+    if (previousInningPositions) {
+        let boundaryScore = 0;
+        for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+            const firstPos = allInningsAssignments[0][playerId];
+            if (prevPos && prevPos !== 'Bench' && firstPos && firstPos !== 'Bench' && prevPos === firstPos) {
+                boundaryScore++;
+            }
+        }
+        bestScore = { repeatScore: bestScore.repeatScore + boundaryScore, benchRepeatPenalty: bestScore.benchRepeatPenalty, total: bestScore.total + boundaryScore };
+    }
+    
     for (let iter = 0; iter < iterations; iter++) {
         const workingAssignments = JSON.parse(JSON.stringify(allInningsAssignments));
         
-        for (let inning = 1; inning < workingAssignments.length; inning++) {
+        // When previousInningPositions is set, the first unlocked inning is at index 0.
+        // We need to check the boundary between the previous locked inning (index -1 conceptually)
+        // and the first unlocked inning (index 0).
+        const startInning = previousInningPositions ? 1 : 1;
+        
+        for (let inning = startInning; inning < workingAssignments.length; inning++) {
             if (lockedInnings.has(inning) || lockedInnings.has(inning - 1)) continue;
             
             for (let trial = 0; trial < 20; trial++) {
@@ -483,10 +528,46 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
             }
         }
         
+        // Also fix the locked→unlocked boundary in this trial, if applicable.
+        if (previousInningPositions) {
+            for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+                const firstPos = workingAssignments[0][playerId];
+                if (prevPos && prevPos !== 'Bench' && firstPos && firstPos !== 'Bench' && prevPos === firstPos) {
+                    const otherPositions = fieldOnly.filter(p => p !== prevPos);
+                    if (otherPositions.length > 0) {
+                        const targetPos = otherPositions[Math.floor(Math.random() * otherPositions.length)];
+                        const occupant = Object.entries(workingAssignments[0]).find(
+                            ([pid, pos]) => pos === targetPos && pid !== playerId
+                        );
+                        if (occupant) {
+                            workingAssignments[0][playerId] = targetPos;
+                            workingAssignments[0][occupant[0]] = prevPos;
+                        } else {
+                            workingAssignments[0][playerId] = targetPos;
+                        }
+                    }
+                }
+            }
+        }
+        
         const newScore = scorePositionAssignments(workingAssignments);
-        if (newScore.total < bestScore.total) {
+        
+        // If checking against a previous locked inning, add boundary penalty to score.
+        let effectiveScore = newScore;
+        if (previousInningPositions) {
+            let boundaryScore = 0;
+            for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+                const firstPos = workingAssignments[0][playerId];
+                if (prevPos && prevPos !== 'Bench' && firstPos && firstPos !== 'Bench' && prevPos === firstPos) {
+                    boundaryScore++;
+                }
+            }
+            effectiveScore = { repeatScore: newScore.repeatScore + boundaryScore, benchRepeatPenalty: newScore.benchRepeatPenalty, total: newScore.total + boundaryScore };
+        }
+        
+        if (effectiveScore.total < bestScore.total) {
             bestAssignments = workingAssignments;
-            bestScore = newScore;
+            bestScore = effectiveScore;
             for (let i = 0; i < allInningsAssignments.length; i++) {
                 allInningsAssignments[i] = JSON.parse(JSON.stringify(workingAssignments[i]));
             }
@@ -500,8 +581,14 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
  * Generate a lineup for a small roster (fewer than 9 players).
  * Guarantees critical positions (C, P, 1B, 2B, 3B) are always covered.
  * Every available player plays every inning — no bench.
+ *
+ * @param {number[]} allAvailablePlayerIds - All available players.
+ * @param {number} numInnings - Number of innings to generate assignments for.
+ * @param {Set<number>} [playersWhoCannotBench] - Players who have already benched in locked innings.
+ * @param {Object} [previousInningPositions] - Positions from the last locked inning before the
+ *                                               first unlocked inning. Maps playerId -> position.
  */
-function generateSmallRosterLineup(allAvailablePlayerIds, numInnings, playersWhoCannotBench = new Set()) {
+function generateSmallRosterLineup(allAvailablePlayerIds, numInnings, playersWhoCannotBench = new Set(), previousInningPositions = null) {
     const fieldOnly = POSITIONS.filter(p => p !== 'Bench');
     const numField = allAvailablePlayerIds.length;
 
@@ -547,10 +634,45 @@ function generateSmallRosterLineup(allAvailablePlayerIds, numInnings, playersWho
         allAssignments.push(assignment);
     }
 
+    // Fix the boundary between the last locked inning and the first unlocked inning:
+    // if a player is on the field in both, make sure they don't have the same position.
+    if (previousInningPositions) {
+        for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+            const firstUnlockedPos = allAssignments[0][playerId];
+            if (prevPos && prevPos !== 'Bench' && firstUnlockedPos && prevPos === firstUnlockedPos) {
+                const otherPositions = fieldOnly.filter(p => p !== prevPos);
+                if (otherPositions.length > 0) {
+                    const targetPos = otherPositions[Math.floor(Math.random() * otherPositions.length)];
+                    const occupant = Object.entries(allAssignments[0]).find(
+                        ([pid, pos]) => pos === targetPos && pid !== playerId
+                    );
+                    if (occupant) {
+                        allAssignments[0][playerId] = targetPos;
+                        allAssignments[0][occupant[0]] = prevPos;
+                    } else {
+                        allAssignments[0][playerId] = targetPos;
+                    }
+                }
+            }
+        }
+    }
+
     // Iterative improvement to reduce same-position repeats
     const iterations = 50;
     let bestAssignments = JSON.parse(JSON.stringify(allAssignments));
     let bestScore = scorePositionAssignments(bestAssignments);
+
+    // If there's a previous locked inning, score the boundary too.
+    if (previousInningPositions) {
+        let boundaryScore = 0;
+        for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+            const firstPos = allAssignments[0][playerId];
+            if (prevPos && prevPos !== 'Bench' && firstPos && prevPos === firstPos) {
+                boundaryScore++;
+            }
+        }
+        bestScore = { repeatScore: bestScore.repeatScore + boundaryScore, benchRepeatPenalty: bestScore.benchRepeatPenalty, total: bestScore.total + boundaryScore };
+    }
 
     for (let iter = 0; iter < iterations; iter++) {
         const workingAssignments = JSON.parse(JSON.stringify(allAssignments));
@@ -593,10 +715,46 @@ function generateSmallRosterLineup(allAvailablePlayerIds, numInnings, playersWho
             }
         }
 
+        // Also fix the locked→unlocked boundary in this trial, if applicable.
+        if (previousInningPositions) {
+            for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+                const firstPos = workingAssignments[0][playerId];
+                if (prevPos && prevPos !== 'Bench' && firstPos && prevPos === firstPos) {
+                    const otherPositions = fieldOnly.filter(p => p !== prevPos);
+                    if (otherPositions.length > 0) {
+                        const targetPos = otherPositions[Math.floor(Math.random() * otherPositions.length)];
+                        const occupant = Object.entries(workingAssignments[0]).find(
+                            ([pid, pos]) => pos === targetPos && pid !== playerId
+                        );
+                        if (occupant) {
+                            workingAssignments[0][playerId] = targetPos;
+                            workingAssignments[0][occupant[0]] = prevPos;
+                        } else {
+                            workingAssignments[0][playerId] = targetPos;
+                        }
+                    }
+                }
+            }
+        }
+
         const newScore = scorePositionAssignments(workingAssignments);
-        if (newScore.total < bestScore.total) {
+
+        // If checking against a previous locked inning, add boundary penalty to score.
+        let effectiveScore = newScore;
+        if (previousInningPositions) {
+            let boundaryScore = 0;
+            for (const [playerId, prevPos] of Object.entries(previousInningPositions)) {
+                const firstPos = workingAssignments[0][playerId];
+                if (prevPos && prevPos !== 'Bench' && firstPos && prevPos === firstPos) {
+                    boundaryScore++;
+                }
+            }
+            effectiveScore = { repeatScore: newScore.repeatScore + boundaryScore, benchRepeatPenalty: newScore.benchRepeatPenalty, total: newScore.total + boundaryScore };
+        }
+
+        if (effectiveScore.total < bestScore.total) {
             bestAssignments = workingAssignments;
-            bestScore = newScore;
+            bestScore = effectiveScore;
             for (let i = 0; i < allAssignments.length; i++) {
                 allAssignments[i] = JSON.parse(JSON.stringify(workingAssignments[i]));
             }
@@ -688,6 +846,28 @@ ${unlockedInnings.length < NUM_INNINGS
         }
     }
     
+    // Step 2b: Find the last locked inning (by index) and collect positions from it.
+    // This is used to avoid same-position repeats at the locked→unlocked boundary.
+    let previousInningPositions = null;
+    const sortedLockedInnings = [...lockedInnings].sort((a, b) => a - b);
+    const lastLockedInning = sortedLockedInnings.length > 0
+        ? sortedLockedInnings[sortedLockedInnings.length - 1]
+        : -1;
+    
+    // If the last locked inning is just before the first unlocked inning, collect positions.
+    if (lastLockedInning >= 0 && unlockedInnings.length > 0) {
+        const firstUnlockedIndex = unlockedInnings[0];
+        if (lastLockedInning === firstUnlockedIndex - 1) {
+            previousInningPositions = {};
+            for (const playerId of availablePlayerIds) {
+                const pos = playerLineup[playerId]?.positions[lastLockedInning];
+                if (pos) {
+                    previousInningPositions[playerId] = pos;
+                }
+            }
+        }
+    }
+    
     // Step 3: Generate lineup assignments based on roster size
     let allAssignments;
     if (availablePlayers.length < NUM_PLAYERS_ON_FIELD) {
@@ -696,7 +876,8 @@ ${unlockedInnings.length < NUM_INNINGS
         allAssignments = generateSmallRosterLineup(
             availablePlayerIds,
             unlockedInnings.length,
-            benchedInLockedInnings
+            benchedInLockedInnings,
+            previousInningPositions
         );
     } else {
         // STANDARD ROSTER: 9 or more available players
@@ -704,7 +885,8 @@ ${unlockedInnings.length < NUM_INNINGS
         allAssignments = generateOptimizedLineup(
             availablePlayerIds,
             unlockedInnings.length,
-            benchedInLockedInnings
+            benchedInLockedInnings,
+            previousInningPositions
         );
     }
     
