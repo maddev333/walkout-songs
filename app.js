@@ -2100,48 +2100,90 @@ function initAudioContext() {
 }
 
 /**
- * Start cross-fading: fade song in while announcer plays, then fade song out after 10s.
+ * Schedule the crossfade: fade song in while the announcer speaks, reaching full volume
+ * only after the announcer finishes.
+ *
+ * @param {number} [announcerDuration] - Duration of the announcer audio in seconds.
+ *   The song will be at ~25% volume during the announcer's speech so the player's name
+ *   is clear, then fade to 100% volume after the announcer ends.
+ */
+function scheduleCrossFade(announcerDuration) {
+    if (!currentPlayer) return;
+
+    const FADE_OUT_DURATION = 3; // seconds to fade song out after song has been playing
+
+    const now = audioCtx.currentTime;
+
+    // Set song gain to 0 at the start
+    songGainNode.gain.setValueAtTime(0, now);
+
+    if (announcerDuration && announcerDuration > 0) {
+        // Fade song in from 0 to 25% volume DURING the announcer's speech
+        // This keeps the player's name audible over the music
+        songGainNode.gain.linearRampToValueAtTime(0.25, now + announcerDuration);
+
+        // After announcer finishes, quickly fade to full volume
+        const fullVolumeTime = now + announcerDuration + 0.5;
+        songGainNode.gain.linearRampToValueAtTime(1, fullVolumeTime);
+
+        // After fade-out starts, hold at full volume for a bit, then fade out
+        const fadeOutStartTime = fullVolumeTime + FADE_OUT_DURATION;
+        songGainNode.gain.setValueAtTime(1, fadeOutStartTime);
+        songGainNode.gain.linearRampToValueAtTime(0, fadeOutStartTime + FADE_OUT_DURATION);
+
+        // Schedule cleanup after fade-out completes
+        const totalTime = announcerDuration + 0.5 + FADE_OUT_DURATION + FADE_OUT_DURATION;
+        if (fadeTimeout) clearTimeout(fadeTimeout);
+        fadeTimeout = setTimeout(() => {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        }, totalTime * 1000);
+    } else {
+        // Fallback: announcer duration not available, use a reasonable default fade
+        const FADE_IN_DURATION = 5; // seconds to fade song in
+
+        // Fade song in from 0 to 25% volume
+        songGainNode.gain.linearRampToValueAtTime(0.25, now + FADE_IN_DURATION);
+
+        // Quickly fade to full volume, hold, then fade out
+        const fullVolumeTime = now + FADE_IN_DURATION + 0.5;
+        songGainNode.gain.linearRampToValueAtTime(1, fullVolumeTime);
+        const fadeOutStartTime = fullVolumeTime + FADE_OUT_DURATION;
+        songGainNode.gain.setValueAtTime(1, fadeOutStartTime);
+        songGainNode.gain.linearRampToValueAtTime(0, fadeOutStartTime + FADE_OUT_DURATION);
+
+        const totalTime = FADE_IN_DURATION + 0.5 + FADE_OUT_DURATION + FADE_OUT_DURATION;
+        if (fadeTimeout) clearTimeout(fadeTimeout);
+        fadeTimeout = setTimeout(() => {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        }, totalTime * 1000);
+    }
+}
+
+/**
+ * Start cross-fading: play the song (at 0 gain) and schedule it to fade in when the announcer ends,
+ * then fade song out after it has been playing for the desired duration.
  */
 function startCrossFade() {
     if (!currentPlayer) return;
-    
+
     initAudioContext();
-    
+
     // Resume AudioContext if suspended (browser policy)
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
-    
-    const FADE_IN_DURATION = 9.5; // seconds to fade song in
-    const FADE_OUT_DURATION = 3.0; // seconds to fade song out after 10s
-    
-    // Set song gain to 0 at the start
+
+    // Set song gain to 0 — song will play silently until announcer ends
     const now = audioCtx.currentTime;
     songGainNode.gain.setValueAtTime(0, now);
-    
-    // Fade song in from 0 to full volume over FADE_IN_DURATION seconds
-    songGainNode.gain.linearRampToValueAtTime(1, now + FADE_IN_DURATION);
-    
-    // After 10 seconds + fade-in, schedule fade-out
-    const fadeOutStartTime = now + FADE_IN_DURATION + 10;
-    songGainNode.gain.setValueAtTime(1, fadeOutStartTime);
-    songGainNode.gain.linearRampToValueAtTime(0, fadeOutStartTime + FADE_OUT_DURATION);
-    
-    // Clear any previous timeout to avoid multiple schedules
-    if (fadeTimeout) {
-        clearTimeout(fadeTimeout);
-    }
-    
-    // Schedule cleanup after fade-out completes: stop the song and reset gain
-    const totalTime = FADE_IN_DURATION + 10 + FADE_OUT_DURATION;
-    fadeTimeout = setTimeout(() => {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-        songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    }, totalTime * 1000);
-    
-    // Start the song playing (song will be at 0 volume and fade in)
+
+    // Start the song playing silently (gain is 0)
     playAudio();
 }
 
@@ -2181,12 +2223,31 @@ function announceAndPlay(player) {
         announcerPlayer.src = announcerSrc;
         announcerPlayer.volume = announcerVolume;
         
-        // When announcer ends, start cross-fade so the song fades in after the announcement
-        announcerPlayer.onended = () => startCrossFade();
+        // Start the song playing silently (gain = 0) — it's buffered and ready
+        startCrossFade();
         
-        // If the announcer file doesn't exist, play the song directly
+        // When the announcer finishes, fade the song in
+        // Capture announcer duration so the song fades in over the announcer's speech
+        // and reaches full volume only after the announcer is done.
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
+        // Wait for the announcer metadata to load so we know the duration
+        announcerPlayer.onloadedmetadata = () => {
+            const announcerDuration = announcerPlayer.duration || 0;
+            scheduleCrossFade(announcerDuration);
+        };
+        
+        // Fallback: if metadata is already loaded, schedule immediately
+        if (announcerPlayer.duration) {
+            scheduleCrossFade(announcerPlayer.duration);
+        }
+        
         announcerPlayer.play().catch((error) => {
             console.warn(`Announcer audio not found for player ${player.name}: ${announcerSrc}. Playing song directly.`);
+            // Announcer file failed to load — play song at full volume immediately
+            cancelCrossFade();
             playAudio();
         });
     } else {
