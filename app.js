@@ -952,20 +952,89 @@ function validateAndShowResults() {
     }
 }
 
+// Render position buttons for the assignment modal
+function renderPositionButtons(fromInningSelector = false) {
+    const positionButtonsContainer = document.getElementById('positionButtons');
+    const modal = document.getElementById('positionAssignmentModal');
+    if (!positionButtonsContainer) return;
+
+    positionButtonsContainer.innerHTML = '';
+
+    // If no specific inning was targeted, show the inning selector so user can choose
+    if (!fromInningSelector && currentInningForPosition === null) {
+        const selectorDiv = document.createElement('div');
+        selectorDiv.className = 'inning-selector';
+        selectorDiv.innerHTML = '<span>Select Inning:</span>';
+        for (let i = 1; i <= NUM_INNINGS; i++) {
+            const inningBtn = document.createElement('button');
+            inningBtn.className = 'inning-btn';
+            inningBtn.textContent = i + (i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th') + ' Inning';
+            inningBtn.addEventListener('click', () => {
+                currentInningForPosition = i;
+                selectorDiv.style.display = 'none';
+                renderPositionButtons(true);
+            });
+            selectorDiv.appendChild(inningBtn);
+        }
+        positionButtonsContainer.appendChild(selectorDiv);
+    }
+
+    // If the inning came from the selector, show the "Assign to Selected Inning" button
+    if (fromInningSelector && currentInningForPosition !== null) {
+        const label = getInningSuffix(currentInningForPosition);
+        const assignBtn = document.createElement('button');
+        assignBtn.className = 'position-btn select-inning-btn';
+        assignBtn.textContent = `Assign to ${label}`;
+        assignBtn.addEventListener('click', () => {
+            if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
+                assignPositionToPlayer(currentPlayerForPosition, POSITIONS[0], false, currentInningForPosition);
+                modal.style.display = 'none';
+                currentPlayerForPosition = null;
+                currentInningForPosition = null;
+            }
+        });
+        positionButtonsContainer.appendChild(assignBtn);
+    }
+
+    // Add position buttons
+    POSITIONS.forEach(position => {
+        const btn = document.createElement('button');
+        btn.className = 'position-btn';
+        btn.textContent = position;
+        btn.addEventListener('click', () => {
+            if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
+                assignPositionToPlayer(currentPlayerForPosition, position, false, currentInningForPosition);
+                modal.style.display = 'none';
+                currentPlayerForPosition = null;
+                currentInningForPosition = null;
+            }
+        });
+        positionButtonsContainer.appendChild(btn);
+    });
+
+    // Add cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'position-btn cancel-btn';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        currentPlayerForPosition = null;
+        currentInningForPosition = null;
+    });
+    positionButtonsContainer.appendChild(cancelBtn);
+}
+
 // Setup position assignment modal
 function setupPositionAssignment() {
     const closeModalBtn = document.getElementById('closeModalBtn');
     const modal = document.getElementById('positionAssignmentModal');
-    const positionButtonsContainer = document.getElementById('positionButtons');
-    const inningSelector = document.createElement('div');
-    inningSelector.className = 'inning-selector';
-    
+
     closeModalBtn.addEventListener('click', () => {
         modal.style.display = 'none';
         currentPlayerForPosition = null;
         currentInningForPosition = null;
     });
-    
+
     // Close modal when clicking outside
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -974,69 +1043,6 @@ function setupPositionAssignment() {
             currentInningForPosition = null;
         }
     });
-    
-    // Generate inning selector
-    inningSelector.innerHTML = '<span>Select Inning:</span>';
-    for (let i = 1; i <= NUM_INNINGS; i++) {
-        const inningBtn = document.createElement('button');
-        inningBtn.className = 'inning-btn';
-        inningBtn.textContent = i + (i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th') + ' Inning';
-        inningBtn.addEventListener('click', () => {
-            currentInningForPosition = parseInt(i);
-            inningSelector.style.display = 'none';
-            renderPositionButtons(true);
-        });
-        inningSelector.appendChild(inningBtn);
-    }
-    positionButtonsContainer.appendChild(inningSelector);
-    
-    function renderPositionButtons(fromInningSelector = false) {
-        positionButtonsContainer.innerHTML = '';
-        
-        // If the inning came from the selector, show the "Assign to Selected Inning" button
-        if (fromInningSelector && currentInningForPosition !== null) {
-            const label = getInningSuffix(currentInningForPosition);
-            const assignBtn = document.createElement('button');
-            assignBtn.className = 'position-btn select-inning-btn';
-            assignBtn.textContent = `Assign to ${label}`;
-            assignBtn.addEventListener('click', () => {
-                if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
-                    assignPositionToPlayer(currentPlayerForPosition, POSITIONS[0], false, currentInningForPosition);
-                    modal.style.display = 'none';
-                    currentPlayerForPosition = null;
-                    currentInningForPosition = null;
-                }
-            });
-            positionButtonsContainer.appendChild(assignBtn);
-        }
-        
-        // Add position buttons
-        POSITIONS.forEach(position => {
-            const btn = document.createElement('button');
-            btn.className = 'position-btn';
-            btn.textContent = position;
-            btn.addEventListener('click', () => {
-                if (currentPlayerForPosition !== null && currentInningForPosition !== null) {
-                    assignPositionToPlayer(currentPlayerForPosition, position, false, currentInningForPosition);
-                    modal.style.display = 'none';
-                    currentPlayerForPosition = null;
-                    currentInningForPosition = null;
-                }
-            });
-            positionButtonsContainer.appendChild(btn);
-        });
-        
-        // Add cancel button
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'position-btn cancel-btn';
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-            currentPlayerForPosition = null;
-            currentInningForPosition = null;
-        });
-        positionButtonsContainer.appendChild(cancelBtn);
-    }
 }
 
 // Open position assignment modal
@@ -1058,8 +1064,9 @@ function openPositionAssignmentModal(playerId, inningOverride = null) {
     
     // If an inning was already specified (e.g., from a cell click), skip the inning selector
     if (inningOverride !== null) {
-        if (inningSelector) inningSelector.style.display = 'none';
         renderPositionButtons(true);
+    } else {
+        renderPositionButtons(false);
     }
 }
 
