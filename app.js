@@ -2110,7 +2110,7 @@ function initAudioContext() {
 function scheduleCrossFade(announcerDuration) {
     if (!currentPlayer) return;
 
-    const FADE_OUT_DURATION = 3; // seconds to fade song out after song has been playing
+    const FADE_OUT_DURATION = 6; // seconds to fade song out after song has been playing
 
     const now = audioCtx.currentTime;
 
