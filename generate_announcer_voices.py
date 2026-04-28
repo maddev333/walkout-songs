@@ -41,8 +41,8 @@ def generate_announcer_text(player: dict) -> str:
     name = player.get("name", "Player")
     number = player.get("number", "0")
     
-    # Sports announcer style announcement
-    return f"Now batting for the Grey Devils, Number {number}, {name}!"
+    # Sports announcer style announcement - build anticipation before the name
+    return f"Batting for the Grey Devils! number {number}... {name.upper()}!"
 
 '''
 def generate_announcer_voice(
@@ -86,8 +86,8 @@ def generate_announcer_voice(
         "Speed: Moderate pace (110-120 BPM) with deliberate pronunciation."
     ),
     temperature: float = 0.8,
-    length_penalty: float = 1.1,
-    max_new_tokens: int = 4096,
+    length_penalty: float = 1.3,
+    max_new_tokens: int = 8192,
 ) -> tuple:
     """
     Generate announcer voice using Qwen3-TTS CustomVoice model.

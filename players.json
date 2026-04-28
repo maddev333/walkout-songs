@@ -18,10 +18,10 @@
     },
     {
       "id": 3,
-      "name": "Jacob",
+      "name": "Jake",
       "number": "6",
       "song": "Enter Sandman",
-      "audioFile": "audio/enter-sandman---metallica.mp3",
+      "audioFile": "audio/enter-sandman.mp3",
       "announcerFile": "announcers/player_6.wav"
     },
     {
@@ -59,10 +59,10 @@
     {
       "id": 8,
       "name": "Michael",
-      "number": "14",
+      "number": "9",
       "song": "Eye of the Tiger",
       "audioFile": "audio/eye-of-the-tiger.mp3",
-      "announcerFile": "announcers/player_14.wav"
+      "announcerFile": "announcers/player_9.wav"
     },
     {
       "id": 9,
