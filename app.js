@@ -1657,12 +1657,7 @@ function renderBattingOrder() {
     const sortedPlayers = getSortedPlayers();
     const showUnavailable = showUnavailableToggle.checked;
     
-    sortedPlayers.forEach((player, index) => {
-        // Skip unavailable players if toggle is off
-        if (!playerAvailability[player.id] && !showUnavailable) {
-            return;
-        }
-        
+       sortedPlayers.forEach((player, index) => {
         const item = document.createElement('div');
         item.className = 'batting-order-item';
         item.setAttribute('draggable', 'true');
