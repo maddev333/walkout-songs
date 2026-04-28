@@ -86,7 +86,7 @@ def generate_announcer_voice(
         "Speed: Moderate pace (110-120 BPM) with deliberate pronunciation."
     ),
     temperature: float = 0.8,
-    length_penalty: float = 1.3,
+    length_penalty: float = 2.3,
     max_new_tokens: int = 8192,
 ) -> tuple:
     """
@@ -158,7 +158,7 @@ def main():
                 announcement_text,
                 speaker="Ryan",
                 temperature=0.8,
-                length_penalty=1.1
+                length_penalty=2.3
             )
             
             # Save to file
