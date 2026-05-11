@@ -1260,14 +1260,9 @@ function openPositionAssignmentModal(playerId, inningOverride = null) {
 
 // Load lineup from localStorage
 function loadLineup() {
-    // Reset all availability to true (Little League: everyone plays)
-    players.forEach(player => {
-        playerAvailability[player.id] = true;
-    });
-    
     // Load locked innings
     loadLockedInnings();
-    
+
     const savedLineup = localStorage.getItem('walkoutPlayerLineup');
     if (savedLineup) {
         try {
@@ -1275,15 +1270,17 @@ function loadLineup() {
         } catch (e) {
             playerLineup = {};
         }
-    } else {
-        // Initialize lineup with all players having no position
-        players.forEach(player => {
+    }
+
+    // Ensure every player has a lineup entry (positions + onBench arrays)
+    players.forEach(player => {
+        if (!playerLineup[player.id]) {
             playerLineup[player.id] = {
                 positions: Array(NUM_INNINGS).fill(null),
                 onBench: Array(NUM_INNINGS).fill(false)
             };
-        });
-    }
+        }
+    });
 }
 
 // Auto arrange lineup: All available players must play each inning
@@ -1561,13 +1558,15 @@ async function assignPositionToPlayer(playerId, position, force = false, inningO
 function saveLineup() {
     localStorage.setItem('walkoutPlayerLineup', JSON.stringify(playerLineup));
     localStorage.setItem('walkoutPlayerAvailability', JSON.stringify(playerAvailability));
-    
-    // Show confirmation
-    const originalText = saveLineupBtn.innerHTML;
-    saveLineupBtn.innerHTML = '✓ Saved!';
-    setTimeout(() => {
-        saveLineupBtn.innerHTML = originalText;
-    }, 2000);
+
+    // Show confirmation if the save button is visible
+    if (saveLineupBtn) {
+        const originalText = saveLineupBtn.innerHTML;
+        saveLineupBtn.innerHTML = '✓ Saved!';
+        setTimeout(() => {
+            saveLineupBtn.innerHTML = originalText;
+        }, 2000);
+    }
 }
 
 // Reset lineup
@@ -1613,26 +1612,57 @@ async function resetLineup() {
 function setupViewToggles() {
     const songsViewBtn = document.getElementById('songsViewBtn');
     const battingOrderBtn = document.getElementById('battingOrderBtn');
+    const lineupBtn = document.getElementById('lineupBtn');
+    const gameViewBtn = document.getElementById('gameViewBtn');
     const songsView = document.getElementById('songsView');
     const battingOrderView = document.getElementById('battingOrderView');
-    
+    const lineupView = document.getElementById('lineupView');
+    const gameView = document.getElementById('gameView');
+
+    function showView(activeBtn, viewToShow) {
+        songsViewBtn.classList.toggle('active', activeBtn === songsViewBtn);
+        battingOrderBtn.classList.toggle('active', activeBtn === battingOrderBtn);
+        lineupBtn.classList.toggle('active', activeBtn === lineupBtn);
+        gameViewBtn.classList.toggle('active', activeBtn === gameViewBtn);
+        songsView.style.display = viewToShow === 'songs' ? 'block' : 'none';
+        battingOrderView.style.display = viewToShow === 'batting' ? 'block' : 'none';
+        lineupView.style.display = viewToShow === 'lineup' ? 'block' : 'none';
+        gameView.style.display = viewToShow === 'game' ? 'block' : 'none';
+    }
+
     songsViewBtn.addEventListener('click', () => {
-        songsViewBtn.classList.add('active');
-        battingOrderBtn.classList.remove('active');
-        lineupBtn.classList.remove('active');
-        songsView.style.display = 'block';
-        battingOrderView.style.display = 'none';
-        lineupView.style.display = 'none';
+        showView(songsViewBtn, 'songs');
+        localStorage.setItem('walkoutActiveView', 'songs');
     });
-    
     battingOrderBtn.addEventListener('click', () => {
-        battingOrderBtn.classList.add('active');
-        songsViewBtn.classList.remove('active');
-        lineupBtn.classList.remove('active');
-        battingOrderView.style.display = 'block';
-        songsView.style.display = 'none';
-        lineupView.style.display = 'none';
+        showView(battingOrderBtn, 'batting');
+        localStorage.setItem('walkoutActiveView', 'batting');
     });
+    lineupBtn.addEventListener('click', () => {
+        showView(lineupBtn, 'lineup');
+        localStorage.setItem('walkoutActiveView', 'lineup');
+        renderInningLockButtons();
+        renderLineupMatrix();
+    });
+    gameViewBtn.addEventListener('click', () => {
+        showView(gameViewBtn, 'game');
+        localStorage.setItem('walkoutActiveView', 'game');
+    });
+
+    // Restore last active view
+    const savedView = localStorage.getItem('walkoutActiveView');
+    if (savedView) {
+        switch (savedView) {
+            case 'songs': showView(songsViewBtn, 'songs'); break;
+            case 'batting': showView(battingOrderBtn, 'batting'); break;
+            case 'lineup':
+                showView(lineupBtn, 'lineup');
+                renderInningLockButtons();
+                renderLineupMatrix();
+                break;
+            case 'game': showView(gameViewBtn, 'game'); break;
+        }
+    }
 }
 
 // Setup batting order controls
@@ -1644,6 +1674,7 @@ function setupBattingOrderControls() {
     saveOrderBtn.addEventListener('click', saveBattingOrder);
     
     showUnavailableToggle.addEventListener('change', (e) => {
+        localStorage.setItem('walkoutShowUnavailable', e.target.checked);
         renderBattingOrder();
         renderPlayerButtons();
     });
@@ -1750,24 +1781,33 @@ function renderBattingOrder() {
 function movePlayerInOrder(playerId, direction) {
     const sortedPlayers = getSortedPlayers();
     const currentIndex = sortedPlayers.findIndex(p => p.id === playerId);
-    
+
     if (currentIndex === -1) return;
-    
+
     let newIndex;
     if (direction === 'up') {
         newIndex = currentIndex - 1;
     } else {
         newIndex = currentIndex + 1;
     }
-    
+
     // Swap in the sorted array
     const temp = sortedPlayers[currentIndex];
     sortedPlayers[currentIndex] = sortedPlayers[newIndex];
     sortedPlayers[newIndex] = temp;
-    
+
     // Update batting order
     battingOrder = sortedPlayers.map(p => p.id);
-    
+
+    // Sync with game tracking if a game is in progress
+    if (typeof gameState !== 'undefined' && gameState && gameState.gameStarted) {
+        gameState.currentBattingOrder = [...battingOrder];
+        if (typeof saveGameState === 'function') saveGameState();
+    }
+
+    // Save batting order to localStorage so it persists on refresh
+    saveBattingOrder();
+
     renderBattingOrder();
     renderPlayerButtons();
 }
@@ -1814,9 +1854,9 @@ function handleDragOver(e) {
 
 function handleDrop(e) {
     e.preventDefault();
-    
+
     if (!draggedPlayerId) return;
-    
+
     // If drag didn't change order, just restore original and bail
     const items = battingOrderList.querySelectorAll('.batting-order-item');
     const newOrder = [];
@@ -1824,10 +1864,20 @@ function handleDrop(e) {
         const playerId = parseInt(item.getAttribute('data-id'));
         newOrder.push(playerId);
     });
-    
+
     // Only update if order actually changed
     if (JSON.stringify(newOrder) !== JSON.stringify(originalBattingOrder)) {
         battingOrder = newOrder;
+
+        // Sync with game tracking if a game is in progress
+        if (typeof gameState !== 'undefined' && gameState && gameState.gameStarted) {
+            gameState.currentBattingOrder = [...battingOrder];
+            if (typeof saveGameState === 'function') saveGameState();
+        }
+
+        // Save batting order to localStorage so it persists on refresh
+        saveBattingOrder();
+
         renderBattingOrder();
         renderPlayerButtons();
     }
@@ -1837,14 +1887,16 @@ function handleDrop(e) {
 function saveBattingOrder() {
     localStorage.setItem('walkoutBattingOrder', JSON.stringify(battingOrder));
     localStorage.setItem('walkoutPlayerAvailability', JSON.stringify(playerAvailability));
-    
-    // Show confirmation
+
+    // Show confirmation if the save button is visible
     const saveOrderBtn = document.getElementById('saveOrderBtn');
-    const originalText = saveOrderBtn.innerHTML;
-    saveOrderBtn.innerHTML = '✓ Saved!';
-    setTimeout(() => {
-        saveOrderBtn.innerHTML = originalText;
-    }, 2000);
+    if (saveOrderBtn) {
+        const originalText = saveOrderBtn.innerHTML;
+        saveOrderBtn.innerHTML = '✓ Saved!';
+        setTimeout(() => {
+            saveOrderBtn.innerHTML = originalText;
+        }, 2000);
+    }
 }
 
 // Load batting order from localStorage
@@ -1903,23 +1955,29 @@ function saveAvailability() {
 
 // Get players sorted by current batting order
 function getSortedPlayers() {
-    if (battingOrder.length === 0) {
+    // When a game is in progress, use the game's batting order so the
+    // Batting Order tab stays in sync with Game Tracking.
+    const activeOrder = (typeof gameState !== 'undefined' && gameState && gameState.gameStarted && gameState.currentBattingOrder.length > 0)
+        ? gameState.currentBattingOrder
+        : battingOrder;
+
+    if (activeOrder.length === 0) {
         return [...players];
     }
-    
+
     // Create a map for quick lookup
     const playerMap = {};
     players.forEach(player => {
         playerMap[player.id] = player;
     });
-    
+
     // Sort by batting order
-    const sorted = [...battingOrder].map(id => playerMap[id]).filter(p => p);
-    
+    const sorted = [...activeOrder].map(id => playerMap[id]).filter(p => p);
+
     // Add any players not in the batting order
-    const orderedIds = new Set(battingOrder);
+    const orderedIds = new Set(activeOrder);
     const remainingPlayers = players.filter(p => !orderedIds.has(p.id));
-    
+
     return [...sorted, ...remainingPlayers];
 }
 
@@ -2056,18 +2114,33 @@ function initAnnouncer() {
     const toggle = document.getElementById('announcerToggle');
     const volumeValue = document.getElementById('volumeValue');
     
+    // Load saved announcer settings
+    const savedAnnouncerEnabled = localStorage.getItem('walkoutAnnouncerEnabled');
+    if (savedAnnouncerEnabled !== null) {
+        announcerEnabled = savedAnnouncerEnabled === 'true';
+        toggle.checked = announcerEnabled;
+    }
+    const savedAnnouncerVolume = localStorage.getItem('walkoutAnnouncerVolume');
+    if (savedAnnouncerVolume !== null) {
+        announcerVolume = parseFloat(savedAnnouncerVolume);
+        volumeSlider.value = Math.round(announcerVolume * 100);
+        volumeValue.textContent = `${Math.round(announcerVolume * 100)}%`;
+    }
+
     // Toggle announcer
     toggle.addEventListener('change', (e) => {
         announcerEnabled = e.target.checked;
+        localStorage.setItem('walkoutAnnouncerEnabled', announcerEnabled);
     });
-    
+
     // Volume control
     volumeSlider.addEventListener('input', (e) => {
         announcerVolume = e.target.value / 100;
         volumeValue.textContent = `${e.target.value}%`;
         announcerPlayer.volume = announcerVolume;
+        localStorage.setItem('walkoutAnnouncerVolume', announcerVolume);
     });
-    
+
     // Set initial volume
     announcerPlayer.volume = announcerVolume;
     
@@ -2271,12 +2344,29 @@ async function loadPlayers() {
             };
         });
         
-        // Load saved batting order if exists
+               // Load saved batting order if exists
         loadBattingOrder();
-        
+
+        // If no saved batting order, initialize with default player order
+        if (battingOrder.length === 0) {
+            battingOrder = players.map(p => p.id);
+            saveBattingOrder();
+        }
+
         // Load lineup if exists
         loadLineup();
-        
+
+        // Load show-unavailable toggle state
+        const savedShowUnavailable = localStorage.getItem('walkoutShowUnavailable');
+        if (savedShowUnavailable !== null) {
+            showUnavailableToggle.checked = savedShowUnavailable === 'true';
+        }
+
+        // Initialize game tracking after players are loaded
+        if (typeof initGameTracking === 'function') {
+            initGameTracking();
+        }
+
         renderPlayerButtons();
         renderBattingOrder();
         setupViewToggles();

@@ -17,6 +17,7 @@
             <button id="songsViewBtn" class="view-btn active">🎵 Songs View</button>
             <button id="battingOrderBtn" class="view-btn">📋 Batting Order</button>
             <button id="lineupBtn" class="view-btn">⚾ Lineup</button>
+            <button id="gameViewBtn" class="view-btn">🏆 Game</button>
         </div>
 
                <!-- Global Controls -->
@@ -124,8 +125,214 @@
                 <!-- Batting order items will be generated here -->
             </div>
             
-            <div class="batting-order-info">
-                <p><strong>💡 Tips:</strong> Drag players to reorder • Click the checkbox next to each player to toggle their availability • Use the "Show Unavailable Players" toggle above to hide/show unavailable players in both views • Unavailable players can't be selected for playback • <strong>⚠️ Songs cannot be played from this view</strong> - use the "🎵 Songs View" tab to play music</p>
+                   <div class="batting-order-info">
+            <p><strong>💡 Tips:</strong> Drag players to reorder • Click the checkbox next to each player to toggle their availability • Use the "Show Unavailable Players" toggle above to hide/show unavailable players in both views • Unavailable players can't be selected for playback • <strong>⚠️ Songs cannot be played from this view</strong> - use the "🎵 Songs View" tab to play music</p>
+        </div>
+    </div>
+
+        <!-- Game View -->
+        <div class="view-container game-view" id="gameView" style="display: none;">
+            <div class="game-header">
+                <h3>🏆 Game Scorer</h3>
+                <div class="game-controls">
+                    <button id="newGameBtn" class="game-control-btn primary">🆕 New Game</button>
+                    <button id="undoBtn" class="game-control-btn">↩️ Undo</button>
+                    <button id="endInningBtn" class="game-control-btn">⏭ End Inning</button>
+                    <button id="endGameBtn" class="game-control-btn danger">🏁 End Game</button>
+                </div>
+            </div>
+
+            <!-- Current Batting Order Display -->
+            <div id="currentBattingOrderDisplay" class="batting-order-display" style="display: none; margin: 15px 0; padding: 10px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #1e3c72;">
+                <div style="font-weight: bold; margin-bottom: 8px; color: #1e3c72;">📋 Current Batting Order:</div>
+                <div id="battingOrderPlayers" style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.9rem;"></div>
+            </div>
+
+            <!-- Game Setup -->
+            <div id="gameSetup" class="game-setup-panel">
+                <div class="setup-group">
+                    <label class="setup-label">🏠 Our Team:</label>
+                    <div class="team-toggle">
+                        <button id="teamHomeBtn" class="team-toggle-btn active" onclick="setOurTeam('home')">🏠 Home (bat bottom)</button>
+                        <button id="teamVisitorBtn" class="team-toggle-btn" onclick="setOurTeam('visitors')">✈️ Visitor (bat top)</button>
+                    </div>
+                    <p class="setup-hint" id="battingHint">Home team bats in the bottom of each inning.</p>
+                </div>
+                <div class="setup-group">
+                    <label class="setup-label">⚾ Opponent Info:</label>
+                    <div class="opponent-inputs">
+                        <input type="text" id="opposingTeamName" placeholder="Team name" class="opponent-input" oninput="saveOpponentInfo()">
+                        <span class="separator">|</span>
+                        <input type="text" id="opposingPitcherNumber" placeholder="Pitcher #" class="opponent-input" maxlength="3" oninput="saveOpponentInfo()">
+                        <input type="text" id="opposingPitcherName" placeholder="Pitcher name" class="opponent-input" oninput="saveOpponentInfo()">
+                    </div>
+                </div>
+                <div class="setup-group">
+                    <label class="setup-label">🏃 Run Rule:</label>
+                    <span class="setup-hint">Auto-swap when opponent reaches <strong>4 runs</strong> in a half-inning. Visitors always bat first.</span>
+                </div>
+                <div class="setup-group">
+                    <label class="setup-label">⏭ Inning End:</label>
+                    <span class="setup-hint">Innings end <strong>automatically</strong> after 3 outs. You can also click "End Inning" to end early.</span>
+                </div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div id="scoreboard" class="scoreboard">
+                <div class="scoreboard-row" id="scoreboardRowTop">
+                    <div class="team-score visitors">
+                        <div class="team-name">VIS</div>
+                        <div class="team-total">0</div>
+                    </div>
+                    <div class="inning-scores">
+                        <div class="inning-score">1<br>0</div>
+                        <div class="inning-score">2<br>0</div>
+                        <div class="inning-score">3<br>0</div>
+                        <div class="inning-score">4<br>0</div>
+                        <div class="inning-score">5<br>0</div>
+                        <div class="inning-score">6<br>0</div>
+                    </div>
+                </div>
+                <div class="inning-info">
+                    <div class="inning-display">
+                        <span class="active-half">▲ Top</span>
+                        <span class="inning-number">1</span>
+                        <span class="">▼ Bot</span>
+                    </div>
+                    <div class="outs-display">Outs: ●○○</div>
+                </div>
+                <div class="scoreboard-row" id="scoreboardRowBottom">
+                    <div class="team-score home">
+                        <div class="team-name">HOME</div>
+                        <div class="team-total">0</div>
+                    </div>
+                    <div class="inning-scores">
+                        <div class="inning-score">1<br>0</div>
+                        <div class="inning-score">2<br>0</div>
+                        <div class="inning-score">3<br>0</div>
+                        <div class="inning-score">4<br>0</div>
+                        <div class="inning-score">5<br>0</div>
+                        <div class="inning-score">6<br>0</div>
+                    </div>
+                </div>
+                <div class="score-add-buttons">
+                    <button class="score-up-btn" data-team="visitors" title="Add run to Visitors">+ VIS</button>
+                    <button class="score-up-btn" data-team="home" title="Add run to Home">+ HOME</button>
+                </div>
+            </div>
+
+            <!-- Diamond & Batter -->
+            <div class="game-main-area">
+                <!-- Batter Display -->
+                <div id="batterDisplay" class="batter-display">
+                    <div class="batter-info no-batter">
+                        <div class="batter-name">No batter selected</div>
+                        <div class="batter-note">Start a new game to begin</div>
+                    </div>
+                </div>
+
+                <!-- Pitcher Display -->
+                <div id="pitcherDisplay" class="pitcher-display" style="display: none;">
+                    <div class="pitcher-info">
+                        <div class="pitcher-label">Our Pitcher</div>
+                        <div class="pitcher-name" id="pitcherName">-</div>
+                        <div class="pitcher-stats" id="pitcherStats"></div>
+                    </div>
+                </div>
+
+                <!-- Opponent Info Display -->
+                <div id="opponentInfoDisplay" class="opponent-info-display" style="display: none;"></div>
+
+                <!-- Opponent Runs Indicator -->
+                <div id="opponentRunsIndicator" class="opponent-runs-indicator" style="display: none;"></div>
+
+                <!-- Diamond -->
+                <div id="diamondDisplay" class="diamond-container">
+                    <div class="diamond-shape">
+                        <div class="base base-third empty"></div>
+                        <div class="base base-second empty"></div>
+                        <div class="base base-first empty"></div>
+                        <div class="base base-home">HOME</div>
+                    </div>
+                </div>
+
+                <!-- Count Display -->
+                <div id="countDisplay" class="count-display">
+                    <div class="count-info">
+                        <div class="count-row"><span class="count-label">Balls:</span><span class="count-number">0/4</span></div>
+                        <div class="count-row"><span class="count-label">Strikes:</span><span class="count-number">0/3</span></div>
+                        <div class="count-row"><span class="count-label">Fouls:</span><span class="count-number">0</span></div>
+                        <div class="count-row"><span class="count-label">Pitches:</span><span class="count-number">0</span></div>
+                    </div>
+                    <button class="reset-count-btn" onclick="resetCount()">Reset Count</button>
+                </div>
+            </div>
+
+            <!-- At-Bat Buttons -->
+            <div class="atbat-section">
+                <h4>Count</h4>
+                <div class="atbat-group count-group">
+                    <button class="atbat-btn ball-btn" data-action="ball">Ball</button>
+                    <button class="atbat-btn strike-btn" data-action="strike">Strike</button>
+                    <button class="atbat-btn foul-btn" data-action="foul">Foul</button>
+                </div>
+
+                <h4>Outcomes</h4>
+                <div class="atbat-group outcome-group">
+                    <button class="atbat-btn hit-btn" data-action="single">1B</button>
+                    <button class="atbat-btn hit-btn" data-action="double">2B</button>
+                    <button class="atbat-btn hit-btn" data-action="triple">3B</button>
+                    <button class="atbat-btn hr-btn" data-action="hr">HR</button>
+                </div>
+                <div class="atbat-group outcome-group">
+                    <button class="atbat-btn bb-btn" data-action="walk">Walk</button>
+                </div>
+                <div class="atbat-group outcome-group">
+                    <button class="atbat-btn out-btn" data-action="go">GO</button>
+                    <button class="atbat-btn out-btn" data-action="fo">FO</button>
+                    <button class="atbat-btn error-btn" data-action="error">E</button>
+                </div>
+            </div>
+
+            <!-- Game Tabs: Log, Stats, Summary, Substitutions -->
+            <div class="game-tabs">
+                <div class="game-tab-buttons">
+                    <button class="game-tab-btn active" data-tab="log">📝 Log</button>
+                    <button class="game-tab-btn" data-tab="stats">📊 Stats</button>
+                    <button class="game-tab-btn" data-tab="summary">📋 Summary</button>
+                    <button class="game-tab-btn" data-tab="subs">🔄 Subs</button>
+                </div>
+
+                <!-- Log Tab -->
+                <div class="game-tab-content active" id="logTab">
+                    <div class="log-actions">
+                        <button class="clear-log-btn" onclick="clearGameLog()">🗑 Clear Log</button>
+                    </div>
+                    <div id="gameLog" class="game-log">
+                        <div class="log-entry">No game in progress. Start a new game to begin scoring.</div>
+                    </div>
+                </div>
+
+                <!-- Stats Tab -->
+                <div class="game-tab-content" id="statsTab">
+                    <div id="statsTabContent" class="stats-content">
+                        <div class="no-stats">Start a game to see stats.</div>
+                    </div>
+                </div>
+
+                <!-- Summary Tab -->
+                <div class="game-tab-content" id="summaryTab">
+                    <div id="summaryTabContent" class="summary-content">
+                        <div class="no-summary">No game summary available.</div>
+                    </div>
+                </div>
+
+                <!-- Substitutions Tab -->
+                <div class="game-tab-content" id="subsTab">
+                    <div id="substitutionsPanel" class="subs-content">
+                        <p>Start a game to manage substitutions.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -179,6 +386,75 @@
         </div>
     </div>
 
+    <!-- Pitcher Change Modal -->
+    <div class="confirm-modal" id="pitcherChangeModal" style="display: none;">
+        <div class="confirm-content">
+            <div class="modal-header">
+                <h3>Change Pitcher</h3>
+                <button class="close-modal" onclick="closePitcherChangeModal()">&times;</button>
+            </div>
+            <div>
+                <p>Select a new pitcher:</p>
+                <select id="newPitcherSelect" class="opponent-input" style="width: 100%; margin: 10px 0;">
+                    <option value="">-- Select new pitcher --</option>
+                </select>
+            </div>
+            <div class="confirm-buttons">
+                <button onclick="closePitcherChangeModal()">Cancel</button>
+                <button onclick="confirmPitcherChange()">Change Pitcher</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Substitution Modal -->
+    <div class="confirm-modal" id="substitutionModal" style="display: none;">
+        <div class="confirm-content">
+            <div class="modal-header">
+                <h3 id="subModalTitle">Make Substitution</h3>
+                <button class="close-modal" onclick="closeSubstitutionModal()">&times;</button>
+            </div>
+            <div id="subModalBody">
+                <div class="sub-modal-section">
+                    <label class="sub-modal-label">Player Coming In:</label>
+                    <select id="subPlayerInSelect" class="sub-modal-select">
+                        <option value="">-- Select player --</option>
+                    </select>
+                </div>
+                <div class="sub-modal-arrow">⬇️ replaces ⬆️</div>
+                <div class="sub-modal-section">
+                    <label class="sub-modal-label">Player Going Out:</label>
+                    <select id="subPlayerOutSelect" class="sub-modal-select">
+                        <option value="">-- Select player --</option>
+                    </select>
+                </div>
+                <div class="sub-modal-note" id="subModalNote"></div>
+            </div>
+            <div class="confirm-buttons">
+                <button onclick="closeSubstitutionModal()">Cancel</button>
+                <button onclick="confirmSubstitution()">Confirm Sub</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batting Order Modal -->
+    <div class="confirm-modal" id="battingOrderModal" style="display: none;">
+        <div class="confirm-content">
+            <div class="modal-header">
+                <h3>Edit Batting Order</h3>
+                <button class="close-modal" onclick="closeBattingOrderModal()">&times;</button>
+            </div>
+            <div id="battingOrderModalBody">
+                <p class="sub-modal-note">Drag players to reorder, or use arrows to move them up/down.</p>
+                <div id="battingOrderEditList" class="batting-order-edit-list"></div>
+            </div>
+            <div class="confirm-buttons">
+                <button onclick="closeBattingOrderModal()">Cancel</button>
+                <button onclick="saveBattingOrderChanges()">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game_tracking.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
