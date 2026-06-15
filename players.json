@@ -74,11 +74,11 @@
     },
     {
       "id": 10,
-      "name": "Luke",
+      "name": "Lukas",
       "number": "19",
       "song": "Lukas Graham - 7 Years",
       "audioFile": "audio/lukas-graham-7-years.mp3",
-      "announcerFile": "announcers/Luke_19.wav"
+      "announcerFile": "announcers/Lukas_19.wav"
     },
     {
       "id": 11,
