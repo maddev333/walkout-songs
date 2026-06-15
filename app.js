@@ -2281,11 +2281,10 @@ function announceAndPlay(player) {
         announcerPlayer.currentTime = 0;
         
         // Try to load custom announcer audio file
-        // Expected format: announcers/player_{number}.mp3
-        const announcerFile = `announcers/player_${player.number}.mp3`;
-        
-        // Check if player has a custom announcer file path
         const customAnnouncerFile = player.announcerFile;
+        
+        // Fallback: build path like 'announcers/Colin_3.wav' using Title case name
+        const announcerFile = `announcers/${player.name}_${player.number}.wav`;
         const announcerSrc = customAnnouncerFile || announcerFile;
         
         announcerPlayer.src = announcerSrc;
@@ -2381,3 +2380,43 @@ async function loadPlayers() {
 loadPlayers();
 initAnnouncer();
 setupLineupView();
+
+// Announcer Voices - Player Voice File Loader ✅
+// Loads announcement sound effects for each player's walkout moment.
+const announcerPaths = {
+    "1": "announcers/Colin_3.wav",
+    "2": "announcers/Paul_7.wav",
+    "3": "announcers/Jayden_6.wav",
+    "4": "announcers/Magnus_7.wav",
+    "5": "announcers/Connor_3.wav",
+    "6": "announcers/Ian_8.wav",
+    "7": "announcers/Cooper_9.wav",
+    "8": "announcers/Michael_9.wav",
+    "9": "announcers/Andrew_16.wav",
+    "10": "announcers/Luke_19.wav",
+    "11": "announcers/Leo_11.wav",
+    "12": "announcers/Fareed_28.wav"
+};
+
+// Announcer Voices - Player Voice File Loader ✅
+const playerVoiceFiles = {
+    "1": "announcers/Colin_3.wav",
+    "2": "announcers/Paul_7.wav",
+    "3": "announcers/Jayden_6.wav",
+    "4": "announcers/Magnus_7.wav",
+    "5": "announcers/Connor_3.wav",
+    "6": "announcers/Ian_8.wav",
+    "7": "announcers/Cooper_9.wav",
+    "8": "announcers/Michael_9.wav",
+    "9": "announcers/Andrew_16.wav",
+    "10": "announcers/Luke_19.wav",
+    "11": "announcers/Leo_11.wav",
+    "12": "announcers/Fareed_28.wav"
+};
+
+// This function will be called during game setup to initialize voice files
+function loadAnnouncerVoice(playerIndex) {
+    const key = (playerIndex + 1).toString();
+    const filePath = playerVoiceFiles[key] || "announcers/default_voice.wav";
+    return filePath;
+}

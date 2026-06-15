@@ -42,7 +42,7 @@ def generate_announcer_text(player: dict) -> str:
     number = player.get("number", "0")
     
     # Sports announcer style announcement - build anticipation before the name
-    return f"Batting for the Grey Devils! number {number}... {name.upper()}!"
+    return f"Batting for the Pickels! number {number}... {name.upper()}!"
 
 '''
 def generate_announcer_voice(
@@ -162,7 +162,7 @@ def main():
             )
             
             # Save to file
-            output_filename = f"player_{player_number}.mp3"
+            output_filename = f"{player_name}_{player_number}.mp3"
             output_path = os.path.join(OUTPUT_DIR, output_filename)
             
             # Save as WAV first (soundfile limitation), then could convert to MP3 if needed

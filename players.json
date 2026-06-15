@@ -2,43 +2,43 @@
   "players": [
     {
       "id": 1,
-      "name": "Gregory",
+      "name": "Colin",
       "number": "3",
-      "song": "Can't Tell Me Nothing",
-      "audioFile": "audio/cant-tell-me-nothing.mp3",
-      "announcerFile": "announcers/player_3.wav"
+      "song": "Forest Frank - Good Day",
+      "audioFile": "audio/forest-frank-good-day.mp3",
+      "announcerFile": "announcers/Colin_3.wav"
     },
     {
       "id": 2,
-      "name": "Calvin",
-      "number": "10",
-      "song": "Glory Days",
-      "audioFile": "audio/glory-days.mp3",
-      "announcerFile": "announcers/player_10.wav"
+      "name": "Paul",
+      "number": "7",
+      "song": "NFL on Fox",
+      "audioFile": "audio/nfl-on-fox.mp3",
+      "announcerFile": "announcers/Paul_7.wav"
     },
     {
       "id": 3,
-      "name": "Jake",
+      "name": "Jayden",
       "number": "6",
-      "song": "Enter Sandman",
-      "audioFile": "audio/enter-sandman.mp3",
-      "announcerFile": "announcers/player_6.wav"
+      "song": "Huts - Coffin",
+      "audioFile": "audio/huts-coffin.mp3",
+      "announcerFile": "announcers/Jayden_6.wav"
     },
     {
       "id": 4,
-      "name": "Kirk",
-      "number": "2",
-      "song": "Take on me",
-      "audioFile": "audio/take-on-me.mp3",
-      "announcerFile": "announcers/player_2.wav"
+      "name": "Magnus",
+      "number": "7",
+      "song": "Dragonforce - Cry Thunder",
+      "audioFile": "audio/dragonforce-cry-thunder.mp3",
+      "announcerFile": "announcers/Magnus_7.wav"
     },
     {
       "id": 5,
-      "name": "Nicolas",
-      "number": "4",
-      "song": "Blitzkrieg Bop",
-      "audioFile": "audio/blitzkrieg-bop.mp3",
-      "announcerFile": "announcers/player_4.wav"
+      "name": "Connor",
+      "number": "3",
+      "song": "Sail North - Unsinkable",
+      "audioFile": "audio/Sail-North-Unsinkable.mp3",
+      "announcerFile": "announcers/Connor_3.wav"
     },
     {
       "id": 6,
@@ -46,15 +46,15 @@
       "number": "8",
       "song": "Hooked on a Feeling",
       "audioFile": "audio/hooked-on-a-feeling.mp3",
-      "announcerFile": "announcers/player_8.wav"
+      "announcerFile": "announcers/Ian_8.wav"
     },
     {
       "id": 7,
-      "name": "Holden",
-      "number": "7",
-      "song": "Nice to Meet You",
-      "audioFile": "audio/nice-to-meet-you.mp3",
-      "announcerFile": "announcers/player_7.wav"
+      "name": "Cooper",
+      "number": "9",
+      "song": "DJ Snake - Turn Down for What",
+      "audioFile": "audio/dj-snake-turn-down.mp3",
+      "announcerFile": "announcers/Cooper_9.wav"
     },
     {
       "id": 8,
@@ -62,23 +62,23 @@
       "number": "9",
       "song": "Eye of the Tiger",
       "audioFile": "audio/eye-of-the-tiger.mp3",
-      "announcerFile": "announcers/player_9.wav"
+      "announcerFile": "announcers/Michael_9.wav"
     },
     {
       "id": 9,
-      "name": "Sam",
-      "number": "5",
-      "song": "Pressure",
-      "audioFile": "audio/pressure.mp3",
-      "announcerFile": "announcers/player_5.wav"
+      "name": "Andrew",
+      "number": "16",
+      "song": "Skillet - Feel Invincible",
+      "audioFile": "audio/skillet-feel-invincible.mp3",
+      "announcerFile": "announcers/Andrew_16.wav"
     },
     {
       "id": 10,
-      "name": "Brooks",
-      "number": "1",
-      "song": "Thunderstruck",
-      "audioFile": "audio/thunderstruck.mp3",
-      "announcerFile": "announcers/player_1.wav"
+      "name": "Luke",
+      "number": "19",
+      "song": "Lukas Graham - 7 Years",
+      "audioFile": "audio/lukas-graham-7-years.mp3",
+      "announcerFile": "announcers/Luke_19.wav"
     },
     {
       "id": 11,
@@ -86,7 +86,15 @@
       "number": "11",
       "song": "Queen - Don't Stop Me Now",
       "audioFile": "audio/queen---dont-stop-me-now.mp3",
-      "announcerFile": "announcers/player_11.wav"
+      "announcerFile": "announcers/Leo_11.wav"
+    },
+    {
+      "id": 12,
+      "name": "Fareed",
+      "number": "28",
+      "song": "The White Stripes - Seven Nation Army",
+      "audioFile": "audio/the-white-stripes---seven-nation-army.mp3",
+      "announcerFile": "announcers/Fareed_28.wav"
     }
   ]
 }
