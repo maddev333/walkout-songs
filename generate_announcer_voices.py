@@ -6,14 +6,26 @@ sports announcer-style voice announcements for each player in the roster.
 The generated audio files are saved to the 'announcers' folder.
 
 Usage:
+    # Generate all players (default)
     python generate_announcer_voices.py
+
+    # Generate a single player by name
+    python generate_announcer_voices.py --player "Player Name"
+
+    # Generate a single player by number
+    python generate_announcer_voices.py --number 7
+
+    # Generate multiple specific players
+    python generate_announcer_voices.py --players "Alice, Bob"
 
 Requirements:
     pip install torch soundfile qwen-tts
 """
 
+import argparse
 import json
 import os
+import re
 import torch
 import soundfile as sf
 from qwen_tts import Qwen3TTSModel
@@ -44,34 +56,21 @@ def generate_announcer_text(player: dict) -> str:
     # Sports announcer style announcement - build anticipation before the name
     return f"Batting for the Pickels! number {number}... {name.upper()}!"
 
-'''
-def generate_announcer_voice(
-    tts_model: Qwen3TTSModel,
-    text: str,
-    speaker: str = "Ryan",
-    instruct: str = "Energetic Baseball announcer voice, professional stadium announcer style. Needs to sound like a walkout announcer."
-) -> tuple:
-    """
-    Generate announcer voice using Qwen3-TTS CustomVoice model.
+
+def find_players(players: list, names: list = None, numbers: list = None) -> list:
+    """Find players matching given names or numbers."""
+    if names:
+        matched = [p for p in players 
+                   if any(p.get("name", "").lower() == name.lower() for name in names)]
+    elif numbers is not None:
+        matched = [p for p in players 
+                   if str(p.get("number", "")) == str(numbers)]
+    else:
+        matched = players
     
-    Args:
-        tts_model: The Qwen3TTSModel instance
-        text: Text to synthesize
-        speaker: Voice speaker (Ryan is a dynamic male voice with strong rhythmic drive)
-        instruct: Voice style instruction
-    
-    Returns:
-        Tuple of (waveform, sample_rate)
-    """
-    wavs, sr = tts_model.generate_custom_voice(
-        text=text,
-        language="English",
-        speaker=speaker,
-        instruct=instruct,
-        max_new_tokens=2048
-    )
-    return wavs, sr
-'''
+    return matched
+
+
 def generate_announcer_voice(
     tts_model: Qwen3TTSModel,
     text: str,
@@ -115,14 +114,95 @@ def generate_announcer_voice(
     )
     return wavs, sr
 
+
+def generate_player_voice(
+    tts_model: Qwen3TTSModel,
+    player: dict,
+    output_dir: str = "announcers"
+) -> str:
+    """Generate and save voice for a single player. Returns the file path."""
+    player_name = player.get("name", "Unknown")
+    player_number = player.get("number", "0")
+    
+    print(f"\nGenerating announcer voice for: {player_name} (#{player_number})")
+    
+    announcement_text = generate_announcer_text(player)
+    print(f"  Text: '{announcement_text}'")
+    
+    wavs, sr = generate_announcer_voice(
+        tts_model, 
+        announcement_text,
+        speaker="Ryan",
+        temperature=0.8,
+        length_penalty=2.3
+    )
+    
+    output_filename = f"{player_name}_{player_number}.mp3"
+    wav_path = os.path.join(output_dir, output_filename).replace(".mp3", ".wav")
+    sf.write(wav_path, wavs[0], sr)
+    print(f"  Saved: {wav_path}")
+    
+    return wav_path
+
+
 def main():
     # Configuration
     MODEL_PATH = "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"
     OUTPUT_DIR = "announcers"
     DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
     
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description="Generate sports announcer voices for player walkout announcements."
+    )
+    parser.add_argument(
+        "--player", "-p",
+        type=str,
+        help="Generate voice for a single player by name (e.g., 'John Smith')"
+    )
+    parser.add_argument(
+        "--players","-P",
+        type=str,
+        help="Generate voices for multiple players by name, comma-separated (e.g., 'Alice,Bob')"
+    )
+    parser.add_argument(
+        "--number", "-n",
+        type=int,
+        help="Generate voice for a single player by jersey number"
+    )
+    parser.add_argument(
+        "--players-json",
+        type=str,
+        default="players.json",
+        help="Path to the players JSON file (default: players.json)"
+    )
+    
+    args = parser.parse_args()
+    
     print(f"Using device: {DEVICE}")
     print(f"Loading Qwen3-TTS model: {MODEL_PATH}")
+    
+    # Load players
+    players = load_players(args.players_json)
+    print(f"Loaded {len(players)} players")
+    
+    # Filter to target players
+    if args.player:
+        targets = find_players(players, names=[args.player])
+    elif args.players:
+        name_list = [n.strip() for n in args.players.split(",")]
+        targets = find_players(players, names=name_list)
+    elif args.number is not None:
+        targets = find_players(players, numbers=args.number)
+    else:
+        # No filter specified - generate for all players (default behavior)
+        targets = players
+    
+    if not targets:
+        print("No matching players found. Generating for all players.")
+        targets = players
+    
+    print(f"Generating voices for {len(targets)} player(s)")
     
     # Initialize the TTS model
     tts = Qwen3TTSModel.from_pretrained(
@@ -135,48 +215,29 @@ def main():
     # Ensure output directory exists
     ensure_directory(OUTPUT_DIR)
     
-    # Load players
-    players = load_players()
-    print(f"Loaded {len(players)} players")
-    
-    # Generate announcer voices for each player
-    for player in players:
-        player_name = player.get("name", "Unknown")
-        player_number = player.get("number", "0")
-        player_id = player.get("id", 0)
-        
-        print(f"\nGenerating announcer voice for: {player_name} (#{player_number})")
-        
-        # Generate announcement text
-        announcement_text = generate_announcer_text(player)
-        print(f"  Text: '{announcement_text}'")
-        
+    # Generate announcer voices
+    for player in targets:
         try:
-            # Generate voice with enhanced baseball announcer settings
-            wavs, sr = generate_announcer_voice(
-                tts, 
-                announcement_text,
-                speaker="Ryan",
-                temperature=0.8,
-                length_penalty=2.3
-            )
-            
-            # Save to file
-            output_filename = f"{player_name}_{player_number}.mp3"
-            output_path = os.path.join(OUTPUT_DIR, output_filename)
-            
-            # Save as WAV first (soundfile limitation), then could convert to MP3 if needed
-            wav_path = output_path.replace(".mp3", ".wav")
-            sf.write(wav_path, wavs[0], sr)
-            print(f"  Saved: {wav_path}")
-            
-            # Update player with announcer file path if not already set
-            if "announcerFile" not in player:
-                player["announcerFile"] = output_path
-            
+            generate_player_voice(tts, player, OUTPUT_DIR)
         except Exception as e:
-            print(f"  Error generating voice for {player_name}: {e}")
+            print(f"  Error generating voice: {e}")
             continue
+    
+    # Update players.json with file paths
+    updated_json = False
+    for player in targets:
+        name = player.get("name", "Unknown")
+        number = player.get("number", "0")
+        key_path = f"{OUTPUT_DIR}/{name}_{number}.mp3".replace(".mp3", ".wav")
+        
+        if "announcerFile" not in player or player["announcerFile"] != key_path:
+            player["announcerFile"] = key_path
+            updated_json = True
+    
+    if updated_json:
+        with open(args.players_json, 'w') as f:
+            json.dump({"players": players}, f, indent=2)
+        print(f"\nUpdated {args.players_json} with announcer file paths")
     
     print("\n" + "="*50)
     print("Announcer voice generation complete!")
