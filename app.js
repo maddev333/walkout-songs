@@ -377,37 +377,29 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
     // Calculate bench spots from ALL available players, not just those who can still bench
     const numBenchPerInning = Math.max(0, allAvailablePlayerIds.length - NUM_PLAYERS_ON_FIELD);
     
-    // Total bench spots across these innings
-    const totalBenchSpots = numBenchPerInning * numInnings;
     
     // Players who can still be benched (haven't benched in locked innings)
     const canBenchIds = allAvailablePlayerIds.filter(id => !playersWhoCannotBench.has(id));
     
-    // Determine which of the *can-bench* players never bench vs. which must bench exactly once
-    let neverBenchIds = [];
-    let mustBenchIds = [];
-    
-    if (canBenchIds.length > totalBenchSpots) {
-        // Enough players who can still bench — some never bench.
-        neverBenchIds = shuffleArray(canBenchIds).slice(0, canBenchIds.length - totalBenchSpots);
-        mustBenchIds = canBenchIds.filter(id => !neverBenchIds.includes(id));
-    } else {
-        // Not enough players to avoid repeats — everyone who can bench must bench at least once,
-        // and some will bench more than once (constraint relaxed).
-        mustBenchIds = [...canBenchIds];
-    }
-    
-    // Round-robin bench assignment: spread mustBenchIds across innings
-    // so each benches at most once (when possible).
     const inningBenchSets = [];
     for (let inning = 0; inning < numInnings; inning++) {
         inningBenchSets.push(new Set());
     }
     
-    let benchIdx = 0;
-    for (const playerId of mustBenchIds) {
-        inningBenchSets[benchIdx % numInnings].add(playerId);
-        benchIdx++;
+    // Fill each unlocked inning's bench to exactly numBenchPerInning players so every inning
+    // has exactly 9 on the field (no missing positions). Players who already benched in a
+    // locked inning are excluded from canBenchIds; when there aren't enough can-bench players
+    // to avoid repeats, bench the least-benched players first so repeats spread evenly.
+    const benchCounts = new Map();
+    for (const id of canBenchIds) benchCounts.set(id, 0);
+    const inningOrder = shuffleArray(Array.from({ length: numInnings }, (_, i) => i));
+    for (const inning of inningOrder) {
+      const ordered = shuffleArray([...canBenchIds]).sort((a, b) => benchCounts.get(a) - benchCounts.get(b));
+      for (let k = 0; k < numBenchPerInning && k < ordered.length; k++) {
+          const pid = ordered[k];
+          inningBenchSets[inning].add(pid);
+          benchCounts.set(pid, benchCounts.get(pid) + 1);
+        }
     }
     
     // Build per-inning position assignments
@@ -490,13 +482,14 @@ function generateOptimizedLineup(allAvailablePlayerIds, numInnings, playersWhoCa
     for (let iter = 0; iter < iterations; iter++) {
         const workingAssignments = JSON.parse(JSON.stringify(allInningsAssignments));
         
-        // When previousInningPositions is set, the first unlocked inning is at index 0.
-        // We need to check the boundary between the previous locked inning (index -1 conceptually)
-        // and the first unlocked inning (index 0).
-        const startInning = previousInningPositions ? 1 : 1;
-        
-        for (let inning = startInning; inning < workingAssignments.length; inning++) {
-            if (lockedInnings.has(inning) || lockedInnings.has(inning - 1)) continue;
+        // workingAssignments is indexed by generated (unlocked) inning 0..N-1, so every
+        // consecutive pair compared below is two unlocked innings. The old guard
+        // `lockedInnings.has(inning)` tested a generated index against real locked inning
+        // numbers and wrongly skipped every comparison whenever an early inning was locked,
+        // silently turning the repeat-avoidance into a no-op in the normal
+        // "some innings already played/locked" case. The locked->unlocked boundary is
+        // handled separately by the previousInningPositions block above.
+        for (let inning = 1; inning < workingAssignments.length; inning++) {
             
             for (let trial = 0; trial < 20; trial++) {
                 const prevInning = inning - 1;
@@ -684,7 +677,6 @@ function generateSmallRosterLineup(allAvailablePlayerIds, numInnings, playersWho
         const workingAssignments = JSON.parse(JSON.stringify(allAssignments));
 
         for (let inning = 1; inning < workingAssignments.length; inning++) {
-            if (lockedInnings.has(inning) || lockedInnings.has(inning - 1)) continue;
 
             for (let trial = 0; trial < 20; trial++) {
                 const prevInning = inning - 1;
