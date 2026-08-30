@@ -2079,6 +2079,8 @@ function playAudio() {
 function pauseAudio() {
     cancelCrossFade();
     audioPlayer.pause();
+    // Stop the announcer so it doesn't keep talking under a paused song
+    if (announcerPlayer) announcerPlayer.pause();
     pauseBtn.disabled = true;
     playBtn.disabled = false;
 }
@@ -2088,10 +2090,15 @@ function stopAudio() {
     cancelCrossFade();
     audioPlayer.pause();
     audioPlayer.currentTime = 0;
+    // Stop and reset the announcer too
+    if (announcerPlayer) {
+       announcerPlayer.pause();
+       announcerPlayer.currentTime = 0;
+    }
     // Reset gain to 0
     if (songGainNode && audioCtx) {
-        songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-        songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+       songGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+       songGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     }
     pauseBtn.disabled = true;
     playBtn.disabled = false;
@@ -2181,6 +2188,10 @@ function scheduleCrossFade(announcerDuration) {
     const FADE_OUT_DURATION = 6; // seconds to fade song out after song has been playing
 
     const now = audioCtx.currentTime;
+
+    // Cancel any pending gain automation first so re-entrant calls
+     // (e.g. a stale duration scheduling twice) can't leave conflicting ramps queued.
+    songGainNode.gain.cancelScheduledValues(now);
 
     // Set song gain to 0 at the start
     songGainNode.gain.setValueAtTime(0, now);
@@ -2380,43 +2391,3 @@ async function loadPlayers() {
 loadPlayers();
 initAnnouncer();
 setupLineupView();
-
-// Announcer Voices - Player Voice File Loader ✅
-// Loads announcement sound effects for each player's walkout moment.
-const announcerPaths = {
-    "1": "announcers/Colin_3.wav",
-    "2": "announcers/Paul_7.wav",
-    "3": "announcers/Jayden_6.wav",
-    "4": "announcers/Magnus_7.wav",
-    "5": "announcers/Connor_3.wav",
-    "6": "announcers/Ian_8.wav",
-    "7": "announcers/Cooper_9.wav",
-    "8": "announcers/Michael_9.wav",
-    "9": "announcers/Andrew_16.wav",
-    "10": "announcers/Luke_19.wav",
-    "11": "announcers/Leo_11.wav",
-    "12": "announcers/Fareed_28.wav"
-};
-
-// Announcer Voices - Player Voice File Loader ✅
-const playerVoiceFiles = {
-    "1": "announcers/Colin_3.wav",
-    "2": "announcers/Paul_7.wav",
-    "3": "announcers/Jayden_6.wav",
-    "4": "announcers/Magnus_7.wav",
-    "5": "announcers/Connor_3.wav",
-    "6": "announcers/Ian_8.wav",
-    "7": "announcers/Cooper_9.wav",
-    "8": "announcers/Michael_9.wav",
-    "9": "announcers/Andrew_16.wav",
-    "10": "announcers/Luke_19.wav",
-    "11": "announcers/Leo_11.wav",
-    "12": "announcers/Fareed_28.wav"
-};
-
-// This function will be called during game setup to initialize voice files
-function loadAnnouncerVoice(playerIndex) {
-    const key = (playerIndex + 1).toString();
-    const filePath = playerVoiceFiles[key] || "announcers/default_voice.wav";
-    return filePath;
-}

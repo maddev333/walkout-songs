@@ -581,6 +581,13 @@ function endInning() {
 // ========================================
 
 function endGame() {
+    // Stop any playing walkout song / announcer and cancel the cross-fade when the game ends
+    if (typeof cancelCrossFade === 'function') cancelCrossFade();
+    if (typeof announcerPlayer !== 'undefined' && announcerPlayer) {
+        announcerPlayer.pause();
+        announcerPlayer.currentTime = 0;
+     }
+
     gameState.gameStarted = false;
     gameState.endTime = new Date().toISOString();
     gameState.gameLog.push('Game over!');
@@ -906,18 +913,19 @@ function processWalk() {
 
     // Check if runner on 3rd scores
     if (gameState.bases.third) {
-        rbis = 1;
-        const team = gameState.halfInning === 'bottom' ? 'home' : 'visitors';
-        const runsSoFar = getRunsThisHalf();
-        const runsAllowed = Math.max(0, gameState.runsThreshold - runsSoFar);
-        const actualRuns = Math.min(1, runsAllowed);
-        if (actualRuns > 0) {
-            gameState.score[team].innings[gameState.currentInning - 1] += actualRuns;
-            gameState.score[team].total += actualRuns;
-            trackRunsInHalf(actualRuns);
-            logMsg += ' (runner scores)';
+       const team = gameState.halfInning === 'bottom' ? 'home' : 'visitors';
+       const runsSoFar = getRunsThisHalf();
+       const runsAllowed = Math.max(0, gameState.runsThreshold - runsSoFar);
+       const actualRuns = Math.min(1, runsAllowed);
+       if (actualRuns > 0) {
+           gameState.score[team].innings[gameState.currentInning - 1] += actualRuns;
+           gameState.score[team].total += actualRuns;
+           trackRunsInHalf(actualRuns);
+           // Only credit the RBI when the run actually scores (not when it is capped by the half-inning limit)
+           rbis = 1;
+           logMsg += ' (runner scores)';
         } else {
-            logMsg += ' (run ignored - limit reached)';
+           logMsg += ' (run ignored - limit reached)';
         }
     }
 

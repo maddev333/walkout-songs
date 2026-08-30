@@ -2,11 +2,11 @@
   "players": [
     {
       "id": 1,
-      "name": "Colin",
+      "name": "Aiden",
       "number": "3",
       "song": "Forest Frank - Good Day",
       "audioFile": "audio/forest-frank-good-day.mp3",
-      "announcerFile": "announcers/Colin_3.wav"
+      "announcerFile": "announcers/Aiden_3.wav"
     },
     {
       "id": 2,
@@ -18,27 +18,27 @@
     },
     {
       "id": 3,
-      "name": "Jayden",
+      "name": "Amon",
       "number": "6",
       "song": "Huts - Coffin",
       "audioFile": "audio/huts-coffin.mp3",
-      "announcerFile": "announcers/Jaden_6.wav"
+      "announcerFile": "announcers/Amon_6.wav"
     },
     {
       "id": 4,
-      "name": "Magnus",
+      "name": "Beckley",
       "number": "7",
       "song": "Dragonforce - Cry Thunder",
       "audioFile": "audio/dragonforce-cry-thunder.mp3",
-      "announcerFile": "announcers/Magnus_7.wav"
+      "announcerFile": "announcers/Beckley_7.wav"
     },
     {
       "id": 5,
-      "name": "Connor",
+      "name": "Bohdi",
       "number": "3",
       "song": "Sail North - Unsinkable",
       "audioFile": "audio/Sail-North-Unsinkable.mp3",
-      "announcerFile": "announcers/Connor_3.wav"
+      "announcerFile": "announcers/Bohdi_3.wav"
     },
     {
       "id": 6,
@@ -50,51 +50,59 @@
     },
     {
       "id": 7,
-      "name": "Cooper",
+      "name": "Ethan",
       "number": "9",
       "song": "DJ Snake - Turn Down for What",
       "audioFile": "audio/dj-snake-turn-down.mp3",
-      "announcerFile": "announcers/Cooper_9.wav"
+      "announcerFile": "announcers/Ethan_9.wav"
     },
     {
       "id": 8,
-      "name": "Michael",
+      "name": "Jack",
       "number": "9",
       "song": "Eye of the Tiger",
       "audioFile": "audio/eye-of-the-tiger.mp3",
-      "announcerFile": "announcers/Michael_9.wav"
+      "announcerFile": "announcers/Jack_9.wav"
     },
     {
       "id": 9,
-      "name": "Andrew",
+      "name": "Javier",
       "number": "16",
       "song": "Skillet - Feel Invincible",
       "audioFile": "audio/skillet-feel-invincible.mp3",
-      "announcerFile": "announcers/Andrew_16.wav"
+      "announcerFile": "announcers/Javier_16.wav"
     },
     {
       "id": 10,
-      "name": "Lucas",
+      "name": "John",
       "number": "19",
       "song": "Lukas Graham - 7 Years",
       "audioFile": "audio/lukas-graham-7-years.mp3",
-      "announcerFile": "announcers/Lukas_19.wav"
+      "announcerFile": "announcers/John_19.wav"
     },
     {
       "id": 11,
-      "name": "Leo",
+      "name": "Luke",
       "number": "11",
       "song": "Queen - Don't Stop Me Now",
       "audioFile": "audio/queen---dont-stop-me-now.mp3",
-      "announcerFile": "announcers/Leo_11.wav"
+      "announcerFile": "announcers/Luke_11.wav"
     },
     {
       "id": 12,
-      "name": "Fareed",
+      "name": "Marcus",
       "number": "28",
-      "song": "The White Stripes - Seven Nation Army",
-      "audioFile": "audio/the-white-stripes---seven-nation-army.mp3",
-      "announcerFile": "announcers/Fareed_28.wav"
+      "song": "Fly Away - Lenny Kravitz",
+      "audioFile": "audio/fly-away--lenny-kravitz.mp3",
+      "announcerFile": "announcers/Marcus_28.wav"
+    },
+    {
+      "id": 13,
+      "name": "Michael",
+      "number": "10",
+      "song": "Imagine Dragons - Believer",
+      "audioFile": "audio/imagine-dragons-believer.mp3",
+      "announcerFile": "announcers/Michael_10.wav"
     }
   ]
 }
