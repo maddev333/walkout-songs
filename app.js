@@ -3,6 +3,14 @@ let players = [];
 let battingOrder = [];
 let currentPlayer = null;
 
+// Escape user-controllable strings (player name/number/song) before interpolating
+// into HTML so they can't break out of the markup.
+function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => (
+         { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
 // Lineup configuration
 const POSITIONS = [
     'Catcher',
@@ -85,10 +93,10 @@ function showToast(message, type = 'info', benchedPlayers = []) {
     
     let benchedHTML = '';
     if (benchedPlayers && benchedPlayers.length > 0) {
-        benchedHTML = '<span class="toast-benched-players">⚠️ Benched: ' + benchedPlayers.map(p => p.name + ' #' + p.number).join(', ') + '</span>';
-    }
+      benchedHTML = '<span class="toast-benched-players">⚠️ Benched: ' + benchedPlayers.map(p => escapeHtml(p.name) + ' #' + escapeHtml(p.number)).join(', ') + '</span>';
+     }
     
-    toast.innerHTML = message + benchedHTML;
+    toast.innerHTML = escapeHtml(message) + benchedHTML;
     container.appendChild(toast);
     
     // Remove toast after 5 seconds
@@ -104,8 +112,18 @@ function showToast(message, type = 'info', benchedPlayers = []) {
 // ========================================
 
 let confirmCallback = null;
+let activeConfirmResolve = null;
+let activeConfirmCleanup = null;
 
 function showConfirm(title, message, benchedPlayers = []) {
+    // If a confirm is already open, dismiss it so its handlers don't leak.
+    if (activeConfirmCleanup) {
+        activeConfirmCleanup();
+        if (activeConfirmResolve) activeConfirmResolve(false);
+        activeConfirmCleanup = null;
+        activeConfirmResolve = null;
+         }
+
     return new Promise((resolve) => {
         const modal = document.getElementById('confirmModal');
         const titleEl = document.getElementById('confirmTitle');
@@ -113,15 +131,16 @@ function showConfirm(title, message, benchedPlayers = []) {
         const okBtn = document.getElementById('confirmOkBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
         const closeBtn = document.getElementById('closeConfirmModal');
+        let closeOnBackdrop = null;
         
         titleEl.textContent = title;
         
         let benchedHTML = '';
         if (benchedPlayers && benchedPlayers.length > 0) {
-            benchedHTML = '<ul>' + benchedPlayers.map(p => '<li class="benched">⚠️ ' + p.name + ' #' + p.number + ' will be moved to bench</li>').join('') + '</ul>';
+            benchedHTML = '<ul>' + benchedPlayers.map(p => '<li class="benched">⚠️ ' + escapeHtml(p.name) + ' #' + escapeHtml(p.number) + ' will be moved to bench</li>').join('') + '</ul>';
         }
         
-        bodyEl.innerHTML = '<p>' + message + '</p>' + benchedHTML;
+        bodyEl.innerHTML = '<p>' + escapeHtml(message) + '</p>' + benchedHTML;
         modal.style.display = 'block';
         
         confirmCallback = resolve;
@@ -131,16 +150,19 @@ function showConfirm(title, message, benchedPlayers = []) {
             okBtn.removeEventListener('click', onOk);
             cancelBtn.removeEventListener('click', onCancel);
             closeBtn.removeEventListener('click', onCancel);
+          modal.removeEventListener('click', closeOnBackdrop);
+          activeConfirmCleanup = null;
+          activeConfirmResolve = null;
         }
         
         function onOk() {
-            cleanup();
-            resolve(true);
+          cleanup();
+          resolve(true);
         }
         
         function onCancel() {
-            cleanup();
-            resolve(false);
+          cleanup();
+          resolve(false);
         }
         
         okBtn.addEventListener('click', onOk);
@@ -148,12 +170,16 @@ function showConfirm(title, message, benchedPlayers = []) {
         closeBtn.addEventListener('click', onCancel);
         
         // Close on backdrop click
-        modal.addEventListener('click', function closeOnBackdrop(e) {
-            if (e.target === modal) {
-                cleanup();
-                resolve(false);
+        closeOnBackdrop = function (e) {
+          if (e.target === modal) {
+               cleanup();
+               resolve(false);
             }
-        });
+        };
+        modal.addEventListener('click', closeOnBackdrop);
+
+        activeConfirmResolve = resolve;
+        activeConfirmCleanup = cleanup;
     });
 }
 
@@ -1307,8 +1333,8 @@ function renderLineupMatrix() {
         nameCell.className = 'matrix-cell player-name';
         nameCell.innerHTML = `
             <div class="player-name-content">
-                <span class="player-name-text">${player.name}</span>
-                <span class="player-number">#${player.number}</span>
+                <span class="player-name-text">${escapeHtml(player.name)}</span>
+                <span class="player-number">#${escapeHtml(player.number)}</span>
                 ${!playerAvailability[player.id] ? '<span class="unavailable-badge">❌ Unavailable</span>' : ''}
                 ${isInActiveRoster ? '<span class="active-roster-badge">Active Roster</span>' : ''}
                 ${isBenchRoster ? '<span class="bench-roster-badge">Bench Roster</span>' : ''}
@@ -1695,9 +1721,9 @@ function renderBattingOrder() {
         item.innerHTML = `
             <div class="position-number">${position}</div>
             <div class="player-info">
-                <div class="player-name">${player.name}</div>
-                <div class="player-number">#${player.number}</div>
-                <div class="player-song">"${player.song}"</div>
+                <div class="player-name">${escapeHtml(player.name)}</div>
+                <div class="player-number">#${escapeHtml(player.number)}</div>
+                <div class="player-song">"${escapeHtml(player.song)}"</div>
             </div>
             <div class="availability-toggle">
                 <label>
@@ -1754,19 +1780,21 @@ function renderBattingOrder() {
         battingOrderList.appendChild(item);
     });
     
-    // Setup drop zone for the list
-    battingOrderList.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        battingOrderList.classList.add('drag-over');
-    });
-    
-    battingOrderList.addEventListener('dragleave', () => {
-        battingOrderList.classList.remove('drag-over');
-    });
-    
-    battingOrderList.addEventListener('drop', (e) => {
-        battingOrderList.classList.remove('drag-over');
-    });
+      // Setup drop zone for the list - attach only once; renderBattingOrder re-runs
+      // on every state change, so re-adding these would accumulate duplicate listeners.
+    if (!battingOrderList._dragSetup) {
+       battingOrderList._dragSetup = true;
+       battingOrderList.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          battingOrderList.classList.add('drag-over');
+           });
+       battingOrderList.addEventListener('dragleave', () => {
+          battingOrderList.classList.remove('drag-over');
+           });
+       battingOrderList.addEventListener('drop', (e) => {
+          battingOrderList.classList.remove('drag-over');
+           });
+       }
 }
 
 // Move player up or down in batting order
@@ -1995,8 +2023,8 @@ function renderPlayerButtons() {
         }
 
         btn.innerHTML = `
-            ${player.name}
-            <span class="player-number">#${player.number}</span>
+            ${escapeHtml(player.name)}
+            <span class="player-number">#${escapeHtml(player.number)}</span>
         `;
 
         // Only allow clicking available players

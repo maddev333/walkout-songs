@@ -75,6 +75,14 @@ function getPlayerName(id) {
     return p ? `#${p.number} ${p.name}` : '?';
 }
 
+// Escape user-controllable strings (player name/number/song from players.json)
+// before interpolating them into HTML so they can't break out of the markup.
+function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
 function getInningLabel() {
     const team = gameState.halfInning === 'top' ? 'Top' : 'Bottom';
     const suffix = gameState.currentInning === 1 ? 'st' : gameState.currentInning === 2 ? 'nd' : gameState.currentInning === 3 ? 'rd' : 'th';
@@ -196,7 +204,7 @@ function openPitcherChangeModal() {
     // Populate with available players (excluding current pitcher)
     const availablePlayers = players.filter(p => playerAvailability[p.id] && p.id !== gameState.currentPitcherId);
     select.innerHTML = '<option value="">-- Select new pitcher --</option>' +
-        availablePlayers.map(p => `<option value="${p.id}">#${p.number} ${p.name}</option>`).join('');
+        availablePlayers.map(p => `<option value="${escapeHtml(p.id)}">#${escapeHtml(p.number)} ${escapeHtml(p.name)}</option>`).join('');
 
     modal.style.display = 'block';
 }
@@ -524,38 +532,39 @@ function endInning() {
     // Clear bases
     gameState.bases = { first: null, second: null, third: null };
 
-    // Track if we were pitching/batting in the half that just ended (before switching)
+    // Capture the label of the half that just ended before switching.
+    const endedLabel = getInningLabel();
+
+    // Track if we were pitching the half that just ended (before switching)
     const weWerePitching = (gameState.halfInning === 'top' && gameState.ourTeam === 'home')
-                        || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
-    const weWereBatting = (gameState.halfInning === 'top' && gameState.ourTeam === 'visitors')
-                       || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'home');
+                       || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
 
     // Switch half inning
     if (gameState.halfInning === 'top') {
-        gameState.halfInning = 'bottom';
-        gameState.gameLog.push(`End of ${getInningLabel()}`);
+      gameState.halfInning = 'bottom';
+      gameState.gameLog.push(`End of ${endedLabel}`);
         // Check mercy rule before starting next half
-        if (checkMercyRule()) {
-            renderGameUI();
-            return;
+      if (checkMercyRule()) {
+          renderGameUI();
+          return;
         }
-        gameState.gameLog.push(`Start of ${getInningLabel()}`);
+      gameState.gameLog.push(`Start of ${getInningLabel()}`);
     } else {
-        gameState.halfInning = 'top';
-        gameState.currentInning++;
-        if (gameState.currentInning > 6) {
-            gameState.currentInning = 6;
-            endGame();
-            renderGameUI();
-            return;
+      gameState.halfInning = 'top';
+      gameState.currentInning++;
+      if (gameState.currentInning > 6) {
+          gameState.currentInning = 6;
+          endGame();
+          renderGameUI();
+          return;
         }
-        gameState.gameLog.push(`End of ${getInningLabel()}`);
+      gameState.gameLog.push(`End of ${endedLabel}`);
         // Check mercy rule before starting next half
-        if (checkMercyRule()) {
-            renderGameUI();
-            return;
+      if (checkMercyRule()) {
+          renderGameUI();
+          return;
         }
-        gameState.gameLog.push(`Start of ${getInningLabel()}`);
+      gameState.gameLog.push(`Start of ${getInningLabel()}`);
     }
 
     gameState.outs = 0;
@@ -734,6 +743,8 @@ function resetCount() {
 
 function processBall() {
     if (!gameState.gameStarted) return;
+    // A ball that doesn't end the at-bat should be undoable, like a strike/walk.
+    if (gameState.count.balls + 1 < 4) pushHistory();
     gameState.count.balls++;
     gameState.pitchCount++;
     // Count pitches based on which team is pitching
@@ -764,6 +775,8 @@ function processBall() {
 
 function processStrike() {
     if (!gameState.gameStarted) return;
+     // A strike that doesn't end the at-bat should be undoable, like a ball/walk.
+    if (gameState.count.strikes + 1 < 3) pushHistory();
     gameState.count.strikes++;
     gameState.pitchCount++;
     gameState.strikeCount++;
@@ -1447,15 +1460,6 @@ function processHit(hitType) {
     renderGameUI();
 }
 
-// Helper: clear bases except for a specific runner
-function clearBasesExceptRunner(runnerId) {
-    if (!runnerId) {
-        gameState.bases = { first: null, second: null, third: null };
-    }
-    // For outs, we clear all bases (simplified)
-    gameState.bases = { first: null, second: null, third: null };
-}
-
 // ========================================
 // SUBSTITUTIONS
 // ========================================
@@ -1539,12 +1543,12 @@ function openSubstitutionModal() {
     // Players available to sub in (not in game)
     const notInGame = availablePlayers.filter(p => !gamePlayers.includes(p.id));
     inSelect.innerHTML = '<option value="">-- Select player coming in --</option>' +
-        notInGame.map(p => `<option value="${p.id}">#${p.number} ${p.name}</option>`).join('');
+        notInGame.map(p => `<option value="${escapeHtml(p.id)}">#${escapeHtml(p.number)} ${escapeHtml(p.name)}</option>`).join('');
 
     // Players in the game (to sub out)
     const inGame = availablePlayers.filter(p => gamePlayers.includes(p.id));
     outSelect.innerHTML = '<option value="">-- Select player going out --</option>' +
-        inGame.map(p => `<option value="${p.id}">#${p.number} ${p.name}</option>`).join('');
+        inGame.map(p => `<option value="${escapeHtml(p.id)}">#${escapeHtml(p.number)} ${escapeHtml(p.name)}</option>`).join('');
 
     document.getElementById('subModalNote').textContent = '';
     modal.style.display = 'block';
@@ -1607,7 +1611,7 @@ function renderBattingOrderEditList() {
         return `
             <div class="batting-order-edit-item ${isCurrent ? 'current-batter' : ''}" data-index="${index}">
                 <span class="bo-edit-number">${index + 1}.</span>
-                <span class="bo-edit-name">${player ? `#${player.number} ${player.name}` : 'Unknown'}</span>
+                <span class="bo-edit-name">${player ? `#${escapeHtml(player.number)} ${escapeHtml(player.name)}` : 'Unknown'}</span>
                 ${isCurrent ? '<span class="bo-edit-badge">🏏 Current</span>' : ''}
                 <div class="bo-edit-controls">
                     <button class="bo-edit-btn" onclick="moveBatterUp(${index})" ${index === 0 ? 'disabled' : ''}>▲</button>
@@ -1678,7 +1682,7 @@ function skipCurrentBatter() {
     pushHistory();
 
     const batter = getCurrentBatter();
-    const batterName = batter ? `#${batter.number} ${batter.name}` : 'Unknown';
+    const batterName = batter ? `#${escapeHtml(batter.number)} ${escapeHtml(batter.name)}` : 'Unknown';
 
     gameState.gameLog.push(`${getInningLabel()}: ${batterName} skipped (moved to next batter)`);
 
@@ -1706,7 +1710,7 @@ function setNextBatter(playerId) {
     pushHistory();
 
     const player = getPlayerById(pid);
-    const playerName = player ? `#${player.number} ${player.name}` : 'Unknown';
+    const playerName = player ? `#${escapeHtml(player.number)} ${escapeHtml(player.name)}` : 'Unknown';
 
     gameState.currentBatterIndex = idx;
     gameState.currentBatterId = pid;
@@ -1808,7 +1812,7 @@ function exportPDF() {
     players.forEach(p => {
         const s = battingStats[p.id] || { atBats: 0, singles: 0, doubles: 0, triples: 0, homeRuns: 0, totalHits: 0, runs: 0, rbis: 0, walks: 0, strikeouts: 0, stolenBases: 0 };
         if (s.atBats > 0 || s.runs > 0 || s.rbis > 0 || s.stolenBases > 0) {
-            battingHTML += `<tr><td>#${p.number} ${p.name}</td><td>${s.atBats}</td><td>${s.totalHits}</td><td>${s.doubles}</td><td>${s.triples}</td><td>${s.homeRuns}</td><td>${s.runs}</td><td>${s.rbis}</td><td>${s.walks}</td><td>${s.strikeouts}</td><td>${s.stolenBases || 0}</td></tr>`;
+            battingHTML += `<tr><td>#${escapeHtml(p.number)} ${escapeHtml(p.name)}</td><td>${s.atBats}</td><td>${s.totalHits}</td><td>${s.doubles}</td><td>${s.triples}</td><td>${s.homeRuns}</td><td>${s.runs}</td><td>${s.rbis}</td><td>${s.walks}</td><td>${s.strikeouts}</td><td>${s.stolenBases || 0}</td></tr>`;
         }
     });
     battingHTML += '</table>';
@@ -1899,6 +1903,10 @@ function renderScoreboard() {
             </div>
             <div class="inning-scores">${homeInnings}</div>
         </div>
+        <div class="score-add-buttons">
+               <button class="score-up-btn" data-team="home" title="Add a run to Home">+ Home</button>
+               <button class="score-up-btn" data-team="visitors" title="Add a run to Visitors">+ Vis</button>
+        </div>
     `;
 }
 
@@ -1911,13 +1919,13 @@ function renderDiamond() {
                        || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
 
     const thirdRunner = gameState.bases.third
-        ? `<div class="base base-third player-runner" data-base="third" title="${weArePitching ? 'Opponent runner' : getPlayerName(gameState.bases.third)}">${weArePitching ? 'OPP' : getPlayerName(gameState.bases.third)}</div>`
+        ? `<div class="base base-third player-runner" data-base="third" title="${weArePitching ? 'Opponent runner' : escapeHtml(getPlayerName(gameState.bases.third))}">${weArePitching ? 'OPP' : escapeHtml(getPlayerName(gameState.bases.third))}</div>`
         : '<div class="base base-third empty"></div>';
     const secondRunner = gameState.bases.second
-        ? `<div class="base base-second player-runner" data-base="second" title="${weArePitching ? 'Opponent runner' : getPlayerName(gameState.bases.second)}">${weArePitching ? 'OPP' : getPlayerName(gameState.bases.second)}</div>`
+        ? `<div class="base base-second player-runner" data-base="second" title="${weArePitching ? 'Opponent runner' : escapeHtml(getPlayerName(gameState.bases.second))}">${weArePitching ? 'OPP' : escapeHtml(getPlayerName(gameState.bases.second))}</div>`
         : '<div class="base base-second empty"></div>';
     const firstRunner = gameState.bases.first
-        ? `<div class="base base-first player-runner" data-base="first" title="${weArePitching ? 'Opponent runner' : getPlayerName(gameState.bases.first)}">${weArePitching ? 'OPP' : getPlayerName(gameState.bases.first)}</div>`
+        ? `<div class="base base-first player-runner" data-base="first" title="${weArePitching ? 'Opponent runner' : escapeHtml(getPlayerName(gameState.bases.first))}">${weArePitching ? 'OPP' : escapeHtml(getPlayerName(gameState.bases.first))}</div>`
         : '<div class="base base-first empty"></div>';
 
     el.innerHTML = `
@@ -2007,10 +2015,8 @@ function advanceRunner(base) {
 function processStolenBase(targetBase) {
     if (!gameState.gameStarted) return;
 
-    pushHistory();
-
     const weArePitching = (gameState.halfInning === 'top' && gameState.ourTeam === 'home')
-                       || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
+        || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
 
     let runnerId = null;
     let fromBase = null;
@@ -2022,14 +2028,14 @@ function processStolenBase(targetBase) {
         fromBase = 'first';
         if (!runnerId) {
             showToast('No runner on 1st to steal 2nd.', 'info');
-            undoStack.pop(); // remove the pushHistory snapshot
             return;
         }
         if (gameState.bases.second) {
             showToast('2nd base is occupied.', 'info');
-            undoStack.pop();
             return;
         }
+        // Snapshot only after validation so a failed steal doesn't leave a stale undo entry.
+        pushHistory();
         gameState.bases.second = runnerId;
         gameState.bases.first = null;
         logMsg = `${getInningLabel()}: ${getPlayerName(runnerId)} steals 2nd!`;
@@ -2039,14 +2045,14 @@ function processStolenBase(targetBase) {
         fromBase = 'second';
         if (!runnerId) {
             showToast('No runner on 2nd to steal 3rd.', 'info');
-            undoStack.pop();
             return;
         }
         if (gameState.bases.third) {
             showToast('3rd base is occupied.', 'info');
-            undoStack.pop();
             return;
         }
+        // Snapshot only after validation so a failed steal doesn't leave a stale undo entry.
+        pushHistory();
         gameState.bases.third = runnerId;
         gameState.bases.second = null;
         logMsg = `${getInningLabel()}: ${getPlayerName(runnerId)} steals 3rd!`;
@@ -2056,9 +2062,10 @@ function processStolenBase(targetBase) {
         fromBase = 'third';
         if (!runnerId) {
             showToast('No runner on 3rd to steal home.', 'info');
-            undoStack.pop();
             return;
         }
+        // Snapshot only after validation so a failed steal doesn't leave a stale undo entry.
+        pushHistory();
         gameState.bases.third = null;
         const team = gameState.halfInning === 'bottom' ? 'home' : 'visitors';
         const runsSoFar = getRunsThisHalf();
@@ -2132,9 +2139,9 @@ function renderBatterDisplay() {
                           || (gameState.halfInning === 'top' && gameState.ourTeam === 'visitors');
         el.innerHTML = `
             <div class="batter-info">
-                <div class="batter-number">#${batter.number}</div>
-                <div class="batter-name">${batter.name}</div>
-                <div class="batter-song">"${batter.song}"</div>
+                <div class="batter-number">#${escapeHtml(batter.number)}</div>
+                <div class="batter-name">${escapeHtml(batter.name)}</div>
+                <div class="batter-song">"${escapeHtml(batter.song)}"</div>
                 <button class="play-walkout-btn" onclick="playBatterWalkout()">▶ Song</button>
                 ${isOurBatting ? '<div class="batting-status">🏏 Our team batting</div>' : '<div class="batting-status">🛡️ Opponent batting</div>'}
             </div>
@@ -2177,7 +2184,7 @@ function renderBattingOrderDisplay() {
             "
             ${isOurBatting && !isCurrent ? `onclick="setNextBatter(${playerId})" title="Set as next batter"` : ''}
             >
-                ${index + 1}. ${player ? `#${player.number} ${player.name}` : 'Unknown'}
+                ${index + 1}. ${player ? `#${escapeHtml(player.number)} ${escapeHtml(player.name)}` : 'Unknown'}
             </span>
         `;
     }).join('');
@@ -2352,7 +2359,7 @@ function renderGameLog() {
     if (!el) return;
 
     el.innerHTML = gameState.gameLog.map((entry, index) =>
-        `<div class="log-entry" data-index="${index}" onclick="editLogEntryInline(${index}, this)">${entry}</div>`
+        `<div class="log-entry" data-index="${index}" onclick="editLogEntryInline(${index}, this)">${escapeHtml(entry)}</div>`
     ).join('');
 
     // Scroll to bottom
@@ -2412,7 +2419,7 @@ function renderStats() {
         const avg = s.atBats > 0 ? (s.totalHits / s.atBats).toFixed(3).replace(/^0+/, '') : '.000';
         html += `
             <tr>
-                <td>#${p.number} ${p.name}</td>
+                <td>#${escapeHtml(p.number)} ${escapeHtml(p.name)}</td>
                 <td>${s.atBats}</td>
                 <td>${s.totalHits}</td>
                 <td>${avg}</td>
@@ -2442,7 +2449,7 @@ function renderStats() {
         if (ps.pitchesThrown > 0) {
             html += `
                 <tr>
-                    <td>#${p.number} ${p.name}</td>
+                    <td>#${escapeHtml(p.number)} ${escapeHtml(p.name)}</td>
                     <td>${ps.pitchesThrown}</td>
                     <td>${ps.strikes}</td>
                     <td>${ps.balls}</td>
@@ -2543,7 +2550,7 @@ function renderSummary() {
         if (s.atBats > 0 || s.runs > 0 || s.rbis > 0 || s.stolenBases > 0) {
             html += `
                 <tr>
-                    <td>#${p.number} ${p.name}</td>
+                    <td>#${escapeHtml(p.number)} ${escapeHtml(p.name)}</td>
                     <td>${s.atBats}</td>
                     <td>${s.totalHits}</td>
                     <td>${s.doubles}</td>
@@ -2564,7 +2571,7 @@ function renderSummary() {
     // Game log
     html += '<h3>Game Log</h3>';
     html += '<div class="game-log-summary">';
-    html += gameState.gameLog.map(entry => `<div class="log-entry">${entry}</div>`).join('');
+    html += gameState.gameLog.map(entry => `<div class="log-entry">${escapeHtml(entry)}</div>`).join('');
     html += '</div>';
 
     // Export buttons
@@ -2601,7 +2608,7 @@ function renderSubstitutions() {
     html += '<h4>Available to Sub In (' + notInGame.length + ')</h4>';
     html += '<div class="sub-list">';
     notInGame.forEach(p => {
-        html += `<button class="sub-in-btn" data-player-id="${p.id}" onclick="showSubInModal(${p.id})">#${p.number} ${p.name}</button>`;
+        html += `<button class="sub-in-btn" data-player-id="${escapeHtml(p.id)}" onclick="showSubInModal(${p.id})">${escapeHtml(p.number)} ${escapeHtml(p.name)}</button>`;
     });
     html += '</div></div>';
 
@@ -2612,7 +2619,7 @@ function renderSubstitutions() {
     gamePlayers.forEach(pid => {
         const p = getPlayerById(pid);
         if (p) {
-            html += `<button class="sub-out-btn" data-player-id="${pid}" onclick="showSubOutModal(${pid})">#${p.number} ${p.name}</button>`;
+            html += `<button class="sub-out-btn" data-player-id="${escapeHtml(pid)}" onclick="showSubOutModal(${pid})">${escapeHtml(p.number)} ${escapeHtml(p.name)}</button>`;
         }
     });
     html += '</div></div>';
@@ -2724,13 +2731,16 @@ function setupGameView() {
         });
     }
 
-    // Opponent score buttons
-    document.querySelectorAll('.score-up-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const team = btn.getAttribute('data-team');
-            addRuns(team, 1);
-        });
-    });
+    // Opponent score buttons - delegate on the stable #scoreboard parent so the
+    // listener survives renderScoreboard() rewrites of the innerHTML.
+    const scoreboardEl = document.getElementById('scoreboard');
+    if (scoreboardEl && !scoreboardEl._delegated) {
+        scoreboardEl._delegated = true;
+        scoreboardEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('.score-up-btn');
+            if (btn) addRuns(btn.getAttribute('data-team'), 1);
+       });
+    }
 }
 
 function processAtBatAction(action) {
