@@ -12,24 +12,24 @@
       "id": 2,
       "name": "Paul",
       "number": "7",
-      "song": "NFL on Fox",
-      "audioFile": "audio/nfl-on-fox.mp3",
+      "song": "Green Onions - Booker T. & the M.G.'s",
+      "audioFile": "audio/green-onions.mp3",
       "announcerFile": "announcers/Paul_7.wav"
     },
     {
       "id": 3,
       "name": "Amon",
       "number": "6",
-      "song": "Huts - Coffin",
-      "audioFile": "audio/huts-coffin.mp3",
+      "song": "Panic! At The Disco - High Hopes",
+      "audioFile": "audio/panic-at-the-disco-high-hopes.mp3",
       "announcerFile": "announcers/Amon_6.wav"
     },
     {
       "id": 4,
       "name": "Beckley",
       "number": "7",
-      "song": "Dragonforce - Cry Thunder",
-      "audioFile": "audio/dragonforce-cry-thunder.mp3",
+      "song": "Journey - Don't Stop Believin",
+      "audioFile": "audio/journey-dont-stop-believin.mp3",
       "announcerFile": "announcers/Beckley_7.wav"
     },
     {
@@ -52,40 +52,40 @@
       "id": 7,
       "name": "Ethan",
       "number": "9",
-      "song": "DJ Snake - Turn Down for What",
-      "audioFile": "audio/dj-snake-turn-down.mp3",
+      "song": "Thunderstruck - AC/DC",
+      "audioFile": "audio/thunderstruck.mp3",
       "announcerFile": "announcers/Ethan_9.wav"
     },
     {
       "id": 8,
       "name": "Jack",
       "number": "9",
-      "song": "Eye of the Tiger",
-      "audioFile": "audio/eye-of-the-tiger.mp3",
+      "song": "Montagem Tomada - MXZI",
+      "audioFile": "audio/montagem-tomada.mp3",
       "announcerFile": "announcers/Jack_9.wav"
     },
     {
       "id": 9,
       "name": "Javier",
       "number": "16",
-      "song": "Skillet - Feel Invincible",
-      "audioFile": "audio/skillet-feel-invincible.mp3",
+      "song": "The Script - Hall of Fame",
+      "audioFile": "audio/the-script-hall-of-fame.mp3",
       "announcerFile": "announcers/Javier_16.wav"
     },
     {
       "id": 10,
-      "name": "John",
+      "name": "Johnny",
       "number": "19",
-      "song": "Lukas Graham - 7 Years",
-      "audioFile": "audio/lukas-graham-7-years.mp3",
-      "announcerFile": "announcers/John_19.wav"
+      "song": "Johnny Be Goode - Chuck Berry",
+      "audioFile": "audio/johnny-be-good.mp3",
+      "announcerFile": "announcers/Johnny_19.wav"
     },
     {
       "id": 11,
       "name": "Luke",
       "number": "11",
-      "song": "Queen - Don't Stop Me Now",
-      "audioFile": "audio/queen---dont-stop-me-now.mp3",
+      "song": "No Batidao - Mafia",
+      "audioFile": "audio/no-batidao.mp3",
       "announcerFile": "announcers/Luke_11.wav"
     },
     {
