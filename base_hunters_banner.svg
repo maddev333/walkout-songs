@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="1200" height="480" role="img" aria-label="Base Hunters — Little League Baseball">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1a30"/>
+      <stop offset="0.5" stop-color="#1e3c72"/>
+      <stop offset="1" stop-color="#2a5298"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#5b83c4" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#5b83c4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ball" cx="38%" cy="30%" r="78%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#faf8f1"/>
+      <stop offset="0.85" stop-color="#ece5d6"/>
+      <stop offset="1" stop-color="#d6cbb6"/>
+    </radialGradient>
+    <radialGradient id="ballRim" cx="50%" cy="50%" r="50%">
+      <stop offset="0.80" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#3a2a10" stop-opacity="0.30"/>
+    </radialGradient>
+    <radialGradient id="ballSpec" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d19a5a"/>
+      <stop offset="0.5" stop-color="#a9702f"/>
+      <stop offset="1" stop-color="#7d4f1e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffc107" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffc107"/>
+      <stop offset="1" stop-color="#ffc107" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="480" fill="url(#bg)"/>
+  <rect width="1200" height="480" fill="url(#glow)"/>
+
+  <text x="600" y="52" text-anchor="middle" fill="#c4d8f2"
+        font-family="Arial, Helvetica, sans-serif" font-size="23"
+        font-weight="700" letter-spacing="13">LITTLE LEAGUE BASEBALL</text>
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+      <!-- ground shadow -->
+      <ellipse cx="600" cy="356" rx="158" ry="18" fill="#0a1830" opacity="0.35"/>
+      <!-- motion / speed lines -->
+      <g stroke="#bcd4f2" stroke-width="4" stroke-linecap="round" opacity="0.45">
+        <line x1="424" y1="176" x2="496" y2="182"/>
+        <line x1="408" y1="210" x2="492" y2="214"/>
+        <line x1="432" y1="246" x2="500" y2="248"/>
+      </g>
+      <!-- dust puff kicked up by the back foot -->
+      <g fill="#dfe8f5" opacity="0.6">
+        <circle cx="726" cy="346" r="8"/>
+        <circle cx="740" cy="352" r="5.5"/>
+        <circle cx="714" cy="356" r="5"/>
+        <circle cx="732" cy="338" r="4"/>
+      </g>
+
+      <!-- BACK leg (extended back) -->
+      <path d="M 638 288 L 672 322 L 706 348" fill="none" stroke="#0e1a30" stroke-width="34"/>
+      <path d="M 638 288 L 672 322 L 706 348" fill="none" stroke="#1e3c72" stroke-width="26"/>
+      <path d="M 694 340 q 42 -2 48 14 q 3 13 -18 15 l -32 0 q -14 -18 2 -33 z" fill="#14233f" stroke="#0a1428" stroke-width="2"/>
+
+      <!-- FRONT leg (planted, knee forward) -->
+      <path d="M 566 288 L 550 322 L 562 350" fill="none" stroke="#0e1a30" stroke-width="34"/>
+      <path d="M 566 288 L 550 322 L 562 350" fill="none" stroke="#2a5298" stroke-width="26"/>
+      <path d="M 548 342 q -40 -2 -46 14 q -3 13 18 15 l 32 0 q 14 -18 -2 -33 z" fill="#14233f" stroke="#0a1428" stroke-width="2"/>
+
+      <!-- BACK arm raised up to grip the bat -->
+      <path d="M 646 176 L 652 138" fill="none" stroke="#0e1a30" stroke-width="24"/>
+      <path d="M 646 176 L 652 138" fill="none" stroke="#fdf6e9" stroke-width="16"/>
+
+      <!-- BODY (baseball) -->
+      <circle cx="600" cy="205" r="84" fill="#fdf7ea"/>
+      <circle cx="600" cy="205" r="84" fill="url(#ballRim)"/>
+      <circle cx="600" cy="205" r="84" fill="none" stroke="#14233f" stroke-width="4.5"/>
+      <path d="M 534 258 q -16 20 -4 44" fill="none" stroke="#d8342e" stroke-width="3.5"/>
+      <path d="M 666 258 q 16 20 4 44" fill="none" stroke="#d8342e" stroke-width="3.5"/>
+
+      <!-- BAT: tapered weapon, thick barrel down / thin knobbed handle in the raised hand -->
+      <g transform="rotate(38 600 205)">
+        <path d="M 586 256 L 594 128 Q 594 120 600 120 Q 606 120 606 128 L 614 256 Q 600 272 586 256 Z"
+              fill="url(#bat)" stroke="#0e1a30" stroke-width="3"/>
+        <path d="M 591 150 L 599 150 L 605 252 L 597 252 Z" fill="#f0d8b0" opacity="0.45"/><!-- bat highlight -->
+         <path d="M 600 120 Q 606 120 606 128 L 614 256 Q 607 268 600 268 Z" fill="#6b4318" opacity="0.28"/>
+        <circle cx="600" cy="120" r="7.5" fill="#8a5320" stroke="#0e1a30" stroke-width="2.5"/>
+      </g>
+
+      <!-- FRONT arm to the barrel -->
+      <path d="M 556 224 L 520 256" fill="none" stroke="#0e1a30" stroke-width="24"/>
+      <path d="M 556 224 L 520 256" fill="none" stroke="#fdf6e9" stroke-width="16"/>
+
+      <!-- hands: back hand grips the bat handle, front hand scouts ahead -->
+      <circle cx="651" cy="138" r="14" fill="#fdf6e9" stroke="#14233f" stroke-width="3"/>
+      <circle cx="518" cy="258" r="14" fill="#fdf6e9" stroke="#14233f" stroke-width="3"/>
+
+      <!-- CHEEKS -->
+       <circle cx="544" cy="212" r="10" fill="#ff8f8f" opacity="0.5"/>
+       <circle cx="660" cy="212" r="10" fill="#ff8f8f" opacity="0.5"/>
+       <!-- FACE: friendly, focused up-right on the base -->
+       <path d="M 548 166 Q 566 158 586 166" fill="none" stroke="#14233f" stroke-width="6" stroke-linecap="round"/>
+       <path d="M 612 166 Q 632 158 652 166" fill="none" stroke="#14233f" stroke-width="6" stroke-linecap="round"/>
+       <ellipse cx="568" cy="188" rx="19" ry="22" fill="#ffffff" stroke="#14233f" stroke-width="3.5"/>
+       <ellipse cx="632" cy="188" rx="19" ry="22" fill="#ffffff" stroke="#14233f" stroke-width="3.5"/>
+       <circle cx="578" cy="184" r="9" fill="#14233f"/>
+       <circle cx="642" cy="184" r="9" fill="#14233f"/>
+       <circle cx="574" cy="180" r="3" fill="#ffffff"/>
+       <circle cx="638" cy="180" r="3" fill="#ffffff"/>
+       <path d="M 574 220 Q 600 240 628 218" fill="none" stroke="#7a1414" stroke-width="6" stroke-linecap="round"/>
+
+      <!-- CAP -->
+      <path d="M 518 150 Q 522 104 600 98 Q 678 104 682 150 Z" fill="#2a5298" stroke="#14233f" stroke-width="3.5"/>
+       <path d="M 542 138 Q 552 114 600 110 Q 616 112 620 120 Q 566 122 554 142 Z" fill="#ffffff" opacity="0.16"/><!-- cap dome highlight -->
+      <path d="M 652 140 Q 734 130 744 154 Q 722 170 648 158 Z" fill="#1e3c72" stroke="#14233f" stroke-width="3"/>
+      <circle cx="600" cy="99" r="6" fill="#1e3c72" stroke="#14233f" stroke-width="2.5"/>
+      <path d="M 600 112 L 614 112 L 618 120 L 607 130 L 596 120 Z" fill="#ffffff" stroke="#1e3c72" stroke-width="1.6"/>
+    </g>
+
+    <text x="600" y="372" text-anchor="middle" fill="#ffffff"
+        font-family="Arial, Helvetica, sans-serif" font-size="108"
+        font-weight="900" letter-spacing="3">BASE <tspan fill="#ffc107">HUNTERS</tspan></text>
+
+  <rect x="330" y="404" width="540" height="4" rx="2" fill="url(#accent)"/>
+
+  <rect x="7" y="7" width="1186" height="466" rx="14" fill="none"
+       stroke="#ffffff" stroke-opacity="0.12" stroke-width="2"/>
+</svg>
