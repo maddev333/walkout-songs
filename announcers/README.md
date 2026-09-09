@@ -19,8 +19,8 @@ The announcer voices are generated using **Qwen3-TTS** (Qwen3-TTS-12Hz-1.7B-Cust
    ```
 
 3. **Generated Files:**
-   - Audio files are saved as `player_{NUMBER}.wav` (e.g., `player_5.wav`, `player_10.wav`)
-   - Each file contains an exciting sports announcer-style announcement: "Number [X], [Player Name]!"
+   - Audio files are saved as `{PlayerName}.wav` (e.g., `Aiden.wav`, `Marcus.wav`)
+   - Each file contains an exciting sports announcer-style announcement: "Batting for the Base Hunters! [Player Name]!"
 
 ### Voice Characteristics
 
@@ -35,7 +35,7 @@ If you want MP3 files instead of WAV:
 
 ```bash
 # Using ffmpeg
-ffmpeg -i player_5.wav -codec:a libmp3lame -qscale:a 2 player_5.mp3
+ffmpeg -i Aiden.wav -codec:a libmp3lame -qscale:a 2 Aiden.mp3
 ```
 
 Or batch convert all:
@@ -45,8 +45,8 @@ for %f in (*.wav) do ffmpeg -i "%f" -codec:a libmp3lame -qscale:a 2 "%~nf.mp3"
 
 ## File Naming Convention
 
-- `player_{NUMBER}.wav` or `player_{NUMBER}.mp3`
-- Where `{NUMBER}` is the player's jersey number
+- `{PlayerName}.wav` or `{PlayerName}.mp3`
+- Where `{PlayerName}` is the player's name in Title case (no jersey number)
 
 ## Integration with Walkout Songs App
 

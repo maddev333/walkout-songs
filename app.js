@@ -2314,8 +2314,8 @@ function announceAndPlay(player) {
         // Try to load custom announcer audio file
         const customAnnouncerFile = player.announcerFile;
         
-        // Fallback: build path like 'announcers/Colin_3.wav' using Title case name
-        const announcerFile = `announcers/${player.name}_${player.number}.wav`;
+        // Fallback: build path like 'announcers/Colin.wav' using Title case name
+        const announcerFile = `announcers/${player.name}.wav`;
         const announcerSrc = customAnnouncerFile || announcerFile;
         
         announcerPlayer.src = announcerSrc;

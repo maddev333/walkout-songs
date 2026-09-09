@@ -43,18 +43,31 @@ def ensure_directory(directory: str):
     os.makedirs(directory, exist_ok=True)
 
 
+TEAM_NAME = "Base Hunters"
+
+
 def generate_announcer_text(player: dict) -> str:
     """
     Generate Baseball announcer-style text for a player.
-    
-    Creates an exciting professional stadium announcer, announcement format like:
-    "Number [X], [Player Name]!"
+
+    Creates an exciting professional stadium announcer announcement.
+    Uses the team name and the player's name only — no jersey number:
+    "Batting for the Base Hunters! [Player Name]!"
+
+    If a player has a "pronunciation" field (a phonetic respelling the TTS
+    model speaks correctly), it is used in place of the name so tricky names
+    like Aiden, Amon, or Ian are announced properly.
     """
-    name = player.get("name", "Player")
-    number = player.get("number", "0")
-    
-    # Sports announcer style announcement - build anticipation before the name
-    return f"Batting for the Pickels! number {number}... {name.upper()}!"
+    display_name = player.get("name", "Player")
+
+    # A "pronunciation" override lets a player fix how their name is *spoken*
+    # by the TTS. It is used verbatim (no upper-casing) so phonetic
+    # spellings keep their intended casing/syllable hints.
+    pronunciation = player.get("pronunciation")
+    spoken_name = pronunciation if pronunciation else display_name.upper()
+
+    # Sports announcer style announcement - team name + player name only, no number
+    return f"Batting for the {TEAM_NAME}! {spoken_name}!"
 
 
 def find_players(players: list, names: list = None, numbers: list = None) -> list:
@@ -78,8 +91,7 @@ def generate_announcer_voice(
     instruct: str = (
         "Live ballpark batter walkout announcer with classic stadium ambiance. "
         "Deep, resonant baritone voice with professional PA system quality. "
-        "Dramatic pause before player number, then enthusiastic delivery. "
-        "Emphasize the player number with strong rhythmic drive, player name with warm enthusiasm. "
+        "Build anticipation, then deliver the player name with strong rhythmic drive and warm enthusiasm. "
         "Background crowd murmur audible but not overpowering. "
         "Broadcast radio quality clarity with stadium reverb. "
         "Speed: Moderate pace (110-120 BPM) with deliberate pronunciation."
@@ -122,26 +134,25 @@ def generate_player_voice(
 ) -> str:
     """Generate and save voice for a single player. Returns the file path."""
     player_name = player.get("name", "Unknown")
-    player_number = player.get("number", "0")
-    
-    print(f"\nGenerating announcer voice for: {player_name} (#{player_number})")
-    
+
+    print(f"\nGenerating announcer voice for: {player_name}")
+
     announcement_text = generate_announcer_text(player)
     print(f"  Text: '{announcement_text}'")
-    
+
     wavs, sr = generate_announcer_voice(
-        tts_model, 
-        announcement_text,
-        speaker="Ryan",
-        temperature=0.8,
-        length_penalty=2.3
+       tts_model,
+       announcement_text,
+       speaker="Ryan",
+       temperature=0.8,
+       length_penalty=2.3
     )
-    
-    output_filename = f"{player_name}_{player_number}.mp3"
-    wav_path = os.path.join(output_dir, output_filename).replace(".mp3", ".wav")
+
+    output_filename = f"{player_name}.wav"
+    wav_path = os.path.join(output_dir, output_filename)
     sf.write(wav_path, wavs[0], sr)
     print(f"  Saved: {wav_path}")
-    
+
     return wav_path
 
 
@@ -227,9 +238,8 @@ def main():
     updated_json = False
     for player in targets:
         name = player.get("name", "Unknown")
-        number = player.get("number", "0")
-        key_path = f"{OUTPUT_DIR}/{name}_{number}.mp3".replace(".mp3", ".wav")
-        
+        key_path = f"{OUTPUT_DIR}/{name}.wav"
+
         if "announcerFile" not in player or player["announcerFile"] != key_path:
             player["announcerFile"] = key_path
             updated_json = True

@@ -3,10 +3,11 @@
     {
       "id": 1,
       "name": "Aiden",
+      "pronunciation": "Aaden",
       "number": "3",
       "song": "Forest Frank - Good Day",
       "audioFile": "audio/forest-frank-good-day.mp3",
-      "announcerFile": "announcers/Aiden_3.wav"
+      "announcerFile": "announcers/Aiden.wav"
     },
     {
       "id": 2,
@@ -14,15 +15,16 @@
       "number": "7",
       "song": "Green Onions - Booker T. & the M.G.'s",
       "audioFile": "audio/green-onions.mp3",
-      "announcerFile": "announcers/Paul_7.wav"
+      "announcerFile": "announcers/Paul.wav"
     },
     {
       "id": 3,
       "name": "Amon",
+      "pronunciation": "Aemon",
       "number": "6",
       "song": "Panic! At The Disco - High Hopes",
       "audioFile": "audio/panic-at-the-disco-high-hopes.mp3",
-      "announcerFile": "announcers/Amon_6.wav"
+      "announcerFile": "announcers/Amon.wav"
     },
     {
       "id": 4,
@@ -30,23 +32,25 @@
       "number": "7",
       "song": "Journey - Don't Stop Believin",
       "audioFile": "audio/journey-dont-stop-believin.mp3",
-      "announcerFile": "announcers/Beckley_7.wav"
+      "announcerFile": "announcers/Beckley.wav"
     },
     {
       "id": 5,
       "name": "Bohdi",
+      "pronunciation": "Bodie",
       "number": "3",
       "song": "Nelly, St. Lunatics - Batter Up",
       "audioFile": "audio/batter-up-nelly.mp3",
-      "announcerFile": "announcers/Bohdi_3.wav"
+      "announcerFile": "announcers/Bohdi.wav"
     },
     {
       "id": 6,
       "name": "Ian",
+      "pronunciation": "Eean",
       "number": "8",
       "song": "Hooked on a Feeling",
       "audioFile": "audio/hooked-on-a-feeling.mp3",
-      "announcerFile": "announcers/Ian_8.wav"
+      "announcerFile": "announcers/Ian.wav"
     },
     {
       "id": 7,
@@ -54,7 +58,7 @@
       "number": "9",
       "song": "Thunderstruck - AC/DC",
       "audioFile": "audio/thunderstruck.mp3",
-      "announcerFile": "announcers/Ethan_9.wav"
+      "announcerFile": "announcers/Ethan.wav"
     },
     {
       "id": 8,
@@ -62,15 +66,16 @@
       "number": "9",
       "song": "Montagem Tomada - MXZI",
       "audioFile": "audio/montagem-tomada.mp3",
-      "announcerFile": "announcers/Jack_9.wav"
+      "announcerFile": "announcers/Jack.wav"
     },
     {
       "id": 9,
       "name": "Javier",
+      "pronunciation": "Hav-ee-air",
       "number": "16",
       "song": "The Script - Hall of Fame",
       "audioFile": "audio/the-script-hall-of-fame.mp3",
-      "announcerFile": "announcers/Javier_16.wav"
+      "announcerFile": "announcers/Javier.wav"
     },
     {
       "id": 10,
@@ -78,7 +83,7 @@
       "number": "19",
       "song": "Johnny Be Goode - Chuck Berry",
       "audioFile": "audio/johnny-be-good.mp3",
-      "announcerFile": "announcers/Johnny_19.wav"
+      "announcerFile": "announcers/Johnny.wav"
     },
     {
       "id": 11,
@@ -86,7 +91,7 @@
       "number": "11",
       "song": "No Batidao - Mafia",
       "audioFile": "audio/no-batidao.mp3",
-      "announcerFile": "announcers/Luke_11.wav"
+      "announcerFile": "announcers/Luke.wav"
     },
     {
       "id": 12,
@@ -94,7 +99,7 @@
       "number": "28",
       "song": "Fly Away - Lenny Kravitz",
       "audioFile": "audio/fly-away--lenny-kravitz.mp3",
-      "announcerFile": "announcers/Marcus_28.wav"
+      "announcerFile": "announcers/Marcus.wav"
     },
     {
       "id": 13,
@@ -102,7 +107,7 @@
       "number": "10",
       "song": "Celebration - Forrest Frank",
       "audioFile": "audio/celebration--forrest-frank.mp3",
-      "announcerFile": "announcers/Michael_10.wav"
+      "announcerFile": "announcers/Michael.wav"
     }
   ]
 }
