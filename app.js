@@ -51,6 +51,7 @@ let lockedInnings = new Set(); // Set of 0-indexed inning numbers that are locke
 // DOM elements
 let audioPlayer = document.getElementById('audioPlayer');
 let announcerPlayer = document.getElementById('announcerPlayer');
+let logoJingle = document.getElementById('logoJingle');
 let playBtn = document.getElementById('playBtn');
 let pauseBtn = document.getElementById('pauseBtn');
 let stopBtn = document.getElementById('stopBtn');
@@ -2072,6 +2073,8 @@ function selectPlayer(player) {
 
 // Play audio
 function playAudio() {
+     // Only one song at a time: stop any logo jingle first
+    stopLogoJingle();
     if (currentPlayer) {
         // Connect the audio element's source to the Web Audio API gain node
         if (audioCtx && !songSource) {
@@ -2309,6 +2312,8 @@ function cancelCrossFade() {
 
 // Announce player name and number, then play song
 function announceAndPlay(player) {
+    // Only one song at a time: stop any logo jingle first
+    stopLogoJingle();
     // Cancel any active cross-fade from a previous selection
     cancelCrossFade();
     
@@ -2358,6 +2363,43 @@ function announceAndPlay(player) {
         // Just play the song directly (no cross-fade)
         playAudio();
     }
+}
+
+// ========================================
+// TEAM LOGO JINGLE
+// ========================================
+
+/**
+ * Play the team jingle ("basshunter.mp3") when the logo is clicked.
+ * Uses its own <audio> element so it doesn't interfere with the walkout crossfade.
+ * Only one song plays at a time: starting the jingle stops any walkout song.
+ * Re-clicking the logo restarts the jingle from the beginning.
+ */
+function playLogoJingle() {
+    if (!logoJingle) return;
+     // Only one song at a time: stop any walkout song (and its announcer) first
+    stopAudio();
+    logoJingle.src = 'basshunter.mp3';
+    logoJingle.currentTime = 0;
+    const playPromise = logoJingle.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+       playPromise.catch(() => {}); // ignore AbortError from a re-click or an autoplay block
+     }
+}
+
+// Stop the logo jingle (used when a walkout song starts, so only one song plays at a time)
+function stopLogoJingle() {
+    if (!logoJingle) return;
+    logoJingle.pause();
+    logoJingle.currentTime = 0;
+}
+
+// Wire up the logo click to play the team jingle
+const teamLogo = document.getElementById('teamLogo');
+if (teamLogo) {
+    teamLogo.addEventListener('click', playLogoJingle);
+    teamLogo.setAttribute('role', 'button');
+    teamLogo.setAttribute('title', 'Play team jingle');
 }
 
 // ========================================
