@@ -2373,6 +2373,7 @@ function announceAndPlay(player) {
  * Play the team jingle ("basshunter.mp3") when the logo is clicked.
  * Uses its own <audio> element so it doesn't interfere with the walkout crossfade.
  * Only one song plays at a time: starting the jingle stops any walkout song.
+ * The logo dances for the duration of the jingle.
  * Re-clicking the logo restarts the jingle from the beginning.
  */
 function playLogoJingle() {
@@ -2385,13 +2386,23 @@ function playLogoJingle() {
     if (playPromise && typeof playPromise.catch === 'function') {
        playPromise.catch(() => {}); // ignore AbortError from a re-click or an autoplay block
      }
+     // Dance the logo while the jingle plays
+    setLogoDancing(true);
 }
 
-// Stop the logo jingle (used when a walkout song starts, so only one song plays at a time)
+// Stop the logo jingle and end the dance (used when a walkout song starts, so only one song plays at a time)
 function stopLogoJingle() {
     if (!logoJingle) return;
     logoJingle.pause();
     logoJingle.currentTime = 0;
+    setLogoDancing(false);
+}
+
+// Toggle the logo's dancing animation on/off
+function setLogoDancing(dancing) {
+    const logo = document.getElementById('teamLogo');
+    if (!logo) return;
+    logo.classList.toggle('dancing', dancing);
 }
 
 // Wire up the logo click to play the team jingle
@@ -2400,6 +2411,11 @@ if (teamLogo) {
     teamLogo.addEventListener('click', playLogoJingle);
     teamLogo.setAttribute('role', 'button');
     teamLogo.setAttribute('title', 'Play team jingle');
+}
+
+// End the dance when the jingle finishes on its own
+if (logoJingle) {
+    logoJingle.addEventListener('ended', () => setLogoDancing(false));
 }
 
 // ========================================
