@@ -2199,13 +2199,15 @@ function initAudioContext() {
  * only after the announcer finishes.
  *
  * @param {number} [announcerDuration] - Duration of the announcer audio in seconds.
- *   The song will be at ~25% volume during the announcer's speech so the player's name
- *   is clear, then fade to 100% volume after the announcer ends.
+ *   The song stays silent for a short delay (FADE_IN_DELAY) so the announcer is clearly
+ *   heard, then fades to ~25% volume over the remaining speech and to 100% volume
+ *   after the announcer ends.
  */
 function scheduleCrossFade(announcerDuration) {
     if (!currentPlayer) return;
 
     const FADE_OUT_DURATION = 6; // seconds to fade song out after song has been playing
+    const FADE_IN_DELAY = 0.5; // seconds to hold the song silent so the announcer is heard
 
     const now = audioCtx.currentTime;
 
@@ -2217,8 +2219,10 @@ function scheduleCrossFade(announcerDuration) {
     songGainNode.gain.setValueAtTime(0, now);
 
     if (announcerDuration && announcerDuration > 0) {
-        // Fade song in from 0 to 25% volume DURING the announcer's speech
-        // This keeps the player's name audible over the music
+        // Hold the song silent for a short delay so the announcer is clearly
+        // heard, then fade in to 25% by the time the announcer finishes.
+        const fadeInStart = now + Math.min(FADE_IN_DELAY, announcerDuration);
+        songGainNode.gain.setValueAtTime(0, fadeInStart);
         songGainNode.gain.linearRampToValueAtTime(0.25, now + announcerDuration);
 
         // After announcer finishes, quickly fade to full volume
@@ -2243,7 +2247,9 @@ function scheduleCrossFade(announcerDuration) {
         // Fallback: announcer duration not available, use a reasonable default fade
         const FADE_IN_DURATION = 5; // seconds to fade song in
 
-        // Fade song in from 0 to 25% volume
+        // Hold the song silent for a short delay, then fade in to 25% volume
+        const fadeInStart = now + Math.min(FADE_IN_DELAY, FADE_IN_DURATION);
+        songGainNode.gain.setValueAtTime(0, fadeInStart);
         songGainNode.gain.linearRampToValueAtTime(0.25, now + FADE_IN_DURATION);
 
         // Quickly fade to full volume, hold, then fade out
