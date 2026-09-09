@@ -2207,7 +2207,7 @@ function scheduleCrossFade(announcerDuration) {
     if (!currentPlayer) return;
 
     const FADE_OUT_DURATION = 6; // seconds to fade song out after song has been playing
-    const FADE_IN_DELAY = 0.5; // seconds to hold the song silent so the announcer is heard
+    const FADE_IN_DELAY = 1.0; // seconds to hold the song silent so the announcer is heard
 
     const now = audioCtx.currentTime;
 
