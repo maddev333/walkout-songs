@@ -46,13 +46,56 @@ def ensure_directory(directory: str):
 TEAM_NAME = "Base Hunters"
 
 
+def number_to_words(number) -> str:
+    """Convert an integer or numeric string to spoken English words (0-999).
+
+    Spelling the jersey number out (e.g. "eighteen") makes the TTS model
+    read it as a quantity rather than digit-by-digit ("one eight"), which
+    sounds wrong in a live announcement. Leading zeros are stripped so
+    "07" reads as "seven". Anything beyond 999 falls back to the raw digits.
+    """
+    if isinstance(number, str):
+       number = int(number.lstrip("0") or "0")
+
+    ones = [
+        "zero", "one", "two", "three", "four", "five", "six",
+        "seven", "eight", "nine", "ten", "eleven", "twelve",
+        "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+        "eighteen", "nineteen",
+    ]
+    tens = [
+        "", "", "twenty", "thirty", "forty", "fifty", "sixty",
+        "seventy", "eighty", "ninety",
+    ]
+
+    number = int(number)
+    if number < 0:
+       return "negative " + number_to_words(-number)
+    if number < 20:
+       return ones[number]
+    if number < 100:
+       t, o = divmod(number, 10)
+       return tens[t] + ("-" + ones[o] if o else "")
+    if number < 1000:
+       h, rem = divmod(number, 100)
+       hundred = ones[h] + " hundred"
+       return hundred + (" " + number_to_words(rem) if rem else "")
+
+    # Beyond 999 is not a realistic jersey number; fall back to raw digits.
+    return str(number)
+
+
 def generate_announcer_text(player: dict) -> str:
     """
-    Generate Baseball announcer-style text for a player.
+    Generate a baseball announcer-style text for a player.
 
     Creates an exciting professional stadium announcer announcement.
-    Uses the team name and the player's name only — no jersey number:
-    "Batting for the Base Hunters! [Player Name]!"
+    Uses the team name, the player's jersey number, and the player's name:
+    "Batting for the Base Hunters! Number 18, Aiden!"
+
+    The number is spelled out (e.g. "eighteen") so the TTS model reads it as
+    a quantity rather than digit-by-digit. Players without a number fall back
+    to the name-only announcement.
 
     If a player has a "pronunciation" field (a phonetic respelling the TTS
     model speaks correctly), it is used in place of the name so tricky names
@@ -66,7 +109,14 @@ def generate_announcer_text(player: dict) -> str:
     pronunciation = player.get("pronunciation")
     spoken_name = pronunciation if pronunciation else display_name.upper()
 
-    # Sports announcer style announcement - team name + player name only, no number
+    # Sports announcer style announcement - team name + jersey number + name.
+    # Announce the number spelled out so it reads naturally (e.g. "eighteen").
+    number = player.get("number", "")
+    if number not in (None, ""):
+       spoken_number = number_to_words(number)
+       return f"Batting for the {TEAM_NAME}! Number {spoken_number}, {spoken_name}!"
+
+    # No number on file - fall back to the name-only announcement.
     return f"Batting for the {TEAM_NAME}! {spoken_name}!"
 
 

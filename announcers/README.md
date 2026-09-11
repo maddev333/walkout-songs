@@ -20,7 +20,7 @@ The announcer voices are generated using **Qwen3-TTS** (Qwen3-TTS-12Hz-1.7B-Cust
 
 3. **Generated Files:**
    - Audio files are saved as `{PlayerName}.wav` (e.g., `Aiden.wav`, `Marcus.wav`)
-   - Each file contains an exciting sports announcer-style announcement: "Batting for the Base Hunters! [Player Name]!"
+   - Each file contains an exciting sports announcer-style announcement: "Batting for the Base Hunters! Number [N], [Player Name]!" (the jersey number is spoken, e.g. "Number eighteen"). Players without a number fall back to the name-only announcement.
 
 ### Voice Characteristics
 
