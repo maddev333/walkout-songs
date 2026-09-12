@@ -2198,19 +2198,19 @@ function initAudioContext() {
 }
 
 /**
- * Schedule the crossfade: fade song in while the announcer speaks, reaching full volume
- * only after the announcer finishes.
+ * Schedule the crossfade: fade the song in over a short window to a low volume
+ * while the announcer speaks, then ramp to full volume after the announcer ends.
  *
  * @param {number} [announcerDuration] - Duration of the announcer audio in seconds.
- *   The song stays silent for a short delay (FADE_IN_DELAY) so the announcer is clearly
- *   heard, then fades to ~25% volume over the remaining speech and to 100% volume
- *   after the announcer ends.
+ *   The song fades in over FADE_IN_DURATION seconds to a low FADE_IN_PEAK volume
+ *   (so the announcer and the player's name stay clear), holds that low level for
+ *   the rest of the announcer, then ramps up to 100% volume once the announcer ends.
  */
 function scheduleCrossFade(announcerDuration) {
     if (!currentPlayer) return;
 
     const FADE_OUT_DURATION = 6; // seconds to fade song out after song has been playing
-    const FADE_IN_DELAY = 1.0; // seconds to hold the song silent so the announcer is heard
+    const FADE_IN_DELAY = 1.0; // seconds to hold the song silent in the no-announcer fallback
 
     const now = audioCtx.currentTime;
 
@@ -2222,13 +2222,17 @@ function scheduleCrossFade(announcerDuration) {
     songGainNode.gain.setValueAtTime(0, now);
 
     if (announcerDuration && announcerDuration > 0) {
-        // Hold the song silent for a short delay so the announcer is clearly
-        // heard, then fade in to 25% by the time the announcer finishes.
-        const fadeInStart = now + Math.min(FADE_IN_DELAY, announcerDuration);
-        songGainNode.gain.setValueAtTime(0, fadeInStart);
-        songGainNode.gain.linearRampToValueAtTime(0.25, now + announcerDuration);
+        // Fade the song in over FADE_IN_DURATION seconds up to a low FADE_IN_PEAK
+        // volume (instead of full) so the announcer — and the player's name — stays
+        // clear, then hold that low level for the rest of the announcer and ramp to
+        // full volume once the announcer finishes.
+        const FADE_IN_DURATION = 1.0; // seconds the song takes to fade in
+        const FADE_IN_PEAK = 0.15; // low volume the song reaches while the announcer speaks
+        const rampEnd = now + Math.min(FADE_IN_DURATION, announcerDuration);
+        songGainNode.gain.linearRampToValueAtTime(FADE_IN_PEAK, rampEnd);
+        songGainNode.gain.setValueAtTime(FADE_IN_PEAK, now + announcerDuration);
 
-        // After announcer finishes, quickly fade to full volume
+        // Ramp to full volume shortly after the announcer ends
         const fullVolumeTime = now + announcerDuration + 0.5;
         songGainNode.gain.linearRampToValueAtTime(1, fullVolumeTime);
 
