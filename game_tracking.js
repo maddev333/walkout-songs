@@ -22,7 +22,7 @@ let gameState = {
         top: [],      // visitors runs in each top half
         bottom: []    // home runs in each bottom half
     },
-    runsThreshold: 4, // auto-swap after 4 runs
+    runsThreshold: 5, // auto-swap after 5 runs
     bases: { first: null, second: null, third: null },
     currentBattingOrder: [],
     currentBatterIndex: 0,
@@ -271,7 +271,7 @@ function loadGameState() {
             gameState.opposingPitcherNumber = parsed.opposingPitcherNumber || '';
             gameState.opposingPitcherName = parsed.opposingPitcherName || '';
             gameState.runsPerHalfInning = parsed.runsPerHalfInning || { top: [], bottom: [] };
-            gameState.runsThreshold = parsed.runsThreshold || 4;
+            gameState.runsThreshold = parsed.runsThreshold || 5;
             gameState.currentBatterId = parsed.currentBatterId || null;
             undoStack = parsed.undoStack || [];
         } catch (e) {
@@ -324,7 +324,7 @@ function resetGameState() {
             visitors: { innings: [0, 0, 0, 0, 0, 0], total: 0 }
         },
         runsPerHalfInning: { top: [], bottom: [] },
-        runsThreshold: 4,
+        runsThreshold: 5,
         bases: { first: null, second: null, third: null },
         currentBattingOrder: [],
         currentBatterIndex: 0,
@@ -504,7 +504,7 @@ async function startNewGame() {
 
     saveGameState();
     renderGameUI();
-    showToast('New game started! Visitors bat first. Auto-swap when opponent reaches 4 runs.', 'success');
+    showToast('New game started! Visitors bat first. Auto-swap when opponent reaches 5 runs.', 'success');
 }
 
 // ========================================
@@ -705,7 +705,7 @@ function checkAutoSwap() {
 function addRuns(team, count) {
     pushHistory();
 
-    // Cap runs at the threshold (4) per half-inning
+    // Cap runs at the threshold (5) per half-inning
     const runsSoFar = getRunsThisHalf();
     const runsAllowed = Math.max(0, gameState.runsThreshold - runsSoFar);
     const actualRuns = Math.min(count, runsAllowed);
@@ -1861,6 +1861,7 @@ function renderGameUI() {
     renderStats();
     renderSubstitutions();
     renderSummary();
+    renderPitchingView();
     updateBattingHint();
 }
 
@@ -2496,6 +2497,255 @@ function renderStats() {
     el.innerHTML = html;
 }
 
+// Pitching panel: the single interface for the whole game from the pitching
+// side. It starts and ends the game, shows the current pitch count with
+// Ball/Strike/Foul/Reset buttons, tracks per-pitcher pitch counts, and lets you
+// set the current pitcher from the table. When the game has ended it shows a
+// game-over screen with the final score and the full pitch tally. Reuses the
+// Game tab's counting logic so there is a single source of truth.
+function renderPitchingView() {
+    const el = document.getElementById('pitchingViewContent');
+    if (!el) return;
+
+    // Not started yet: prompt to start the game.
+    if (!gameState.gameStarted && !gameState.endTime) {
+     el.innerHTML = `
+         <div class="pitching-empty">
+             <div class="pitching-empty-icon">⚾</div>
+             <div class="pitching-empty-msg">No game in progress.</div>
+             ${buildTeamToggle()}
+             <button class="game-control-btn primary pitching-controls-start" onclick="startNewGame()">🚀 Start Game</button>
+         </div>
+     `;
+     return;
+    }
+
+    // Game already ended: show the post-game summary with full pitch totals.
+    if (!gameState.gameStarted && gameState.endTime) {
+     renderPitchingGameOver(el);
+     return;
+    }
+
+    const currentPitcherId = gameState.currentPitcherId;
+    const currentPitcher = currentPitcherId ? getPlayerById(currentPitcherId) : null;
+    const weArePitching = (gameState.halfInning === 'top' && gameState.ourTeam === 'home')
+                        || (gameState.halfInning === 'bottom' && gameState.ourTeam === 'visitors');
+    const count = gameState.count || { balls: 0, strikes: 0, fouls: 0 };
+    const ballsDots = '●'.repeat(count.balls) + '○'.repeat(Math.max(0, 4 - count.balls));
+    const strikesDots = '●'.repeat(count.strikes) + '○'.repeat(Math.max(0, 3 - count.strikes));
+    const emptyStats = { pitchesThrown: 0, strikes: 0, balls: 0, walks: 0, strikeouts: 0, hitsAllowed: 0, runsAllowed: 0, inningsPitched: 0, stolenBasesAllowed: 0 };
+
+    let html = '';
+
+    // Game controls + current status (start/end the game right here)
+    const inningLabel = (typeof getInningLabel === 'function') ? getInningLabel() : '';
+    html += `
+       <div class="pitching-controls">
+           <div class="pitching-controls-label">${weArePitching ? '🎯 Pitching' : '🏏 Batting'}${inningLabel ? ' · ' + escapeHtml(inningLabel) : ''}</div>
+           <button class="game-control-btn danger pitching-controls-end" onclick="endGame()">🏁 End Game</button>
+       </div>
+    `;
+
+    // Current pitcher card
+    if (currentPitcher) {
+        const ps = pitchingStats[currentPitcher.id] || emptyStats;
+        const atLimit = ps.pitchesThrown >= MAX_PITCHES;
+        const nearLimit = ps.pitchesThrown >= MAX_PITCHES - 5;
+        const limitBadge = atLimit ? ' ⛔ MAX' : nearLimit ? ' ⚠️' : '';
+        html += `
+            <div class="pitcher-display ${atLimit ? 'at-limit' : ''}">
+                <div class="pitcher-info">
+                    <div class="pitcher-label">${weArePitching ? '🎯 Our Pitcher (on the mound)' : 'Our Pitcher'}</div>
+                    <div class="pitcher-name">#${escapeHtml(String(currentPitcher.number))} ${escapeHtml(currentPitcher.name)}</div>
+                    <div class="pitcher-stats">
+                        <span class="pitcher-stat">P: ${ps.pitchesThrown}${limitBadge}</span>
+                        <span class="pitcher-stat">S: ${ps.strikes}</span>
+                        <span class="pitcher-stat">B: ${ps.balls}</span>
+                        <span class="pitcher-stat">K: ${ps.strikeouts}</span>
+                        <span class="pitcher-stat">H: ${ps.hitsAllowed}</span>
+                        <span class="pitcher-stat">R: ${ps.runsAllowed}</span>
+                        <span class="pitcher-stat">IP: ${ps.inningsPitched}</span>
+                    </div>
+                    <button class="change-pitcher-btn" onclick="openPitcherChangeModal()">Change Pitcher</button>
+                </div>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="pitcher-display">
+                <div class="pitcher-info">
+                    <div class="pitcher-label">Our Pitcher</div>
+                    <div class="pitcher-name">No pitcher assigned</div>
+                    <button class="change-pitcher-btn" onclick="openPitcherChangeModal()">Set Pitcher</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Counting status: who is pitching right now
+    const statusText = weArePitching
+        ? '🎯 We are pitching — these counts go to our pitcher'
+        : "🏏 We are batting — these counts go to the opponent's pitcher";
+    html += `<div class="pitching-status ${weArePitching ? 'pitching-us' : 'pitching-opp'}">${statusText}</div>`;
+
+    // Live count card with the counting buttons (ball / strike / foul / reset)
+    html += `
+        <div class="pitching-count-card">
+            <div class="pitching-count-main">
+                <span class="pitching-count-num">${count.strikes}-${count.balls}</span>
+                <span class="pitching-count-label">Current Count</span>
+            </div>
+            <div class="pitching-count-detail">
+                <span>B ${ballsDots}</span>
+                <span>S ${strikesDots}</span>
+                ${count.fouls ? `<span>F ${count.fouls}</span>` : ''}
+            </div>
+            <div class="pitching-pitch-total">📊 Game pitch count: <strong>${gameState.pitchCount}</strong></div>
+            <div class="atbat-group">
+                <button class="atbat-btn ball-btn" onclick="processBall()">Ball</button>
+                <button class="atbat-btn strike-btn" onclick="processStrike()">Strike</button>
+                <button class="atbat-btn foul-btn" onclick="processFoul()">Foul</button>
+                <button class="reset-count-btn" onclick="resetCount(); renderGameUI();">↺ Reset</button>
+            </div>
+            <div class="atbat-group outcome-group">
+                <button class="atbat-btn hit-btn" onclick="processAtBatAction('single')">1B</button>
+                <button class="atbat-btn hit-btn" onclick="processAtBatAction('double')">2B</button>
+                <button class="atbat-btn hit-btn" onclick="processAtBatAction('triple')">3B</button>
+                <button class="atbat-btn hr-btn" onclick="processAtBatAction('hr')">HR</button>
+            </div>
+        </div>
+    `;
+
+        html += buildPitchersTable(true, currentPitcherId, emptyStats);
+
+    html += buildOpponentBlock();
+
+        el.innerHTML = html;
+    }
+
+    // ----- Shared helpers for the Pitching view -----
+
+    // Build the "Our Pitchers" table. When `live` is false the rows are read-only
+    // (no Set button / "on the mound" badge) and the empty-row colspan drops to 10.
+    function buildPitchersTable(live, currentPitcherId, emptyStats) {
+        const ids = new Set();
+        players.forEach(p => {
+       const ps = pitchingStats[p.id];
+       if (ps && ps.pitchesThrown > 0) ids.add(p.id);
+    });
+        if (currentPitcherId) ids.add(currentPitcherId);
+
+        const pitcherRows = [...ids].map(id => ({ id, ...pitchingStats[id] || emptyStats }))
+        .filter(r => r.pitchesThrown > 0 || r.id === currentPitcherId)
+        .sort((a, b) => {
+           if (a.id === currentPitcherId) return -1;
+           if (b.id === currentPitcherId) return 1;
+           return b.pitchesThrown - a.pitchesThrown;
+        });
+
+        let out = '<h3 class="pitching-table-title">📋 Our Pitchers</h3>';
+        out += '<div class="stats-table-wrapper"><table class="stats-table"><thead><tr>';
+        out += '<th>Player</th><th>P</th><th>S</th><th>B</th><th>BB</th><th>K</th><th>H</th><th>R</th><th>SB</th><th>IP</th>' + (live ? '<th></th>' : '');
+        out += '</tr></thead><tbody>';
+
+        if (pitcherRows.length === 0) {
+       out += `<tr><td colspan="${live ? 11 : 10}" style="text-align:center;">No pitches thrown yet.</td></tr>`;
+    } else {
+       pitcherRows.forEach(r => {
+           const p = getPlayerById(r.id);
+           if (!p) return;
+           const atLimit = r.pitchesThrown >= MAX_PITCHES;
+           const nearLimit = r.pitchesThrown >= MAX_PITCHES - 5;
+           const limitBadge = atLimit ? ' ⛔' : nearLimit ? ' ⚠️' : '';
+           const isCurrent = !!currentPitcherId && r.id === currentPitcherId;
+           const setCell = live ? `<td>${isCurrent ? '✓' : `<button class="pitch-set-btn" onclick="changePitcher(${p.id})">Set</button>`}</td>` : '';
+           out += `
+                <tr class="${isCurrent ? 'pitcher-row-current' : ''}">
+                    <td>${isCurrent ? '▶ ' : ''}#${escapeHtml(String(p.number))} ${escapeHtml(p.name)}${isCurrent ? ' <span class="pitcher-row-badge">on the mound</span>' : ''}</td>
+                    <td>${r.pitchesThrown}${limitBadge}</td>
+                    <td>${r.strikes}</td>
+                    <td>${r.balls}</td>
+                    <td>${r.walks}</td>
+                    <td>${r.strikeouts}</td>
+                    <td>${r.hitsAllowed}</td>
+                    <td>${r.runsAllowed}</td>
+                    <td>${r.stolenBasesAllowed || 0}</td>
+                    <td>${r.inningsPitched}</td>
+                    ${setCell}
+                </tr>
+            `;
+        });
+    }
+        out += '</tbody></table></div>';
+        return out;
+    }
+
+    // Build the opponent pitcher's pitch-count block (shared by the live and
+    // game-over screens).
+    function buildOpponentBlock() {
+        const oppTeamLabel = gameState.opposingTeamName || (gameState.ourTeam === 'home' ? 'VIS' : 'HOME');
+        const oppPitcherLabel = gameState.opposingPitcherNumber
+        ? `#${gameState.opposingPitcherNumber} ${gameState.opposingPitcherName || ''}`.trim()
+        : (gameState.opposingPitcherName || 'Opponent Pitcher');
+        return `
+        <div class="opponent-info-display">
+            <div class="opponent-team-name">${escapeHtml(oppTeamLabel)}</div>
+            <div class="opponent-pitcher">P: ${escapeHtml(oppPitcherLabel)}</div>
+            <div class="opponent-pitch-count">Pitches: ${opposingPitchingStats.pitchesThrown}</div>
+        </div>
+    `;
+    }
+
+    // Home/away selector shown when starting a game from the Pitching view so the
+    // user picks which side they're on (which decides whether we pitch or bat first).
+    function buildTeamToggle() {
+        const isHome = gameState.ourTeam === 'home';
+        const hint = isHome
+         ? '🏠 Home team bats in the <strong>bottom</strong> — we pitch first.'
+         : '✈️ Visitor team bats in the <strong>top</strong> — we bat first.';
+        return `
+         <div class="pitching-team-select">
+             <div class="pitching-team-select-label">🏟️ We are</div>
+             <div class="team-toggle">
+                 <button class="team-toggle-btn ${isHome ? 'active' : ''}" onclick="setOurTeam('home')">🏠 Home</button>
+                 <button class="team-toggle-btn ${!isHome ? 'active' : ''}" onclick="setOurTeam('visitors')">✈️ Visitor</button>
+             </div>
+             <p class="pitching-team-select-hint">${hint}</p>
+         </div>
+     `;
+     }
+
+    // Post-game screen shown in the Pitching view after endGame(): final score,
+    // the full per-pitcher pitch tally, the opponent pitch count, and a button to
+    // start a new game.
+    function renderPitchingGameOver(el) {
+        const our = gameState.ourTeam === 'home' ? (gameState.homeRuns || 0) : (gameState.visitorRuns || 0);
+        const opp = gameState.ourTeam === 'home' ? (gameState.visitorRuns || 0) : (gameState.homeRuns || 0);
+        const oppLabel = gameState.opposingTeamName || 'Opponent';
+
+        const emptyStats = { pitchesThrown: 0, strikes: 0, balls: 0, walks: 0, strikeouts: 0, hitsAllowed: 0, runsAllowed: 0, inningsPitched: 0, stolenBasesAllowed: 0 };
+        const ended = gameState.endTime && (typeof formatTime === 'function') ? formatTime(gameState.endTime) : '';
+
+        let html = `
+        <div class="pitching-gameover">
+            <h3 class="pitching-gameover-title">🏁 Game Over</h3>
+            <div class="pitching-gameover-final-score">
+                <span class="score-team">${escapeHtml(gameState.ourTeam === 'home' ? 'HOME' : 'US')}</span>
+                <span class="score">${our}</span>
+                <span class="score-divider">–</span>
+                <span class="score">${opp}</span>
+                <span class="score-team">${escapeHtml(oppLabel)}</span>
+            </div>
+            ${ended ? `<div class="pitching-gameover-end-time">Ended ${escapeHtml(ended)}</div>` : ''}
+            ${buildPitchersTable(false, null, emptyStats)}
+            ${buildOpponentBlock()}
+            ${buildTeamToggle()}
+            <button class="game-control-btn primary pitching-controls-start" onclick="startNewGame()">🚀 Start New Game</button>
+        </div>
+    `;
+        el.innerHTML = html;
+    }
+
 function renderSummary() {
     const el = document.getElementById('summaryTabContent');
     if (!el) return;
@@ -2678,11 +2928,15 @@ function setupGameView() {
             document.getElementById('songsViewBtn').classList.remove('active');
             document.getElementById('battingOrderBtn').classList.remove('active');
             document.getElementById('lineupBtn').classList.remove('active');
-            document.getElementById('gameView').style.display = 'block';
-            document.getElementById('songsView').style.display = 'none';
-            document.getElementById('battingOrderView').style.display = 'none';
-            document.getElementById('lineupView').style.display = 'none';
-            renderGameUI();
+           const pitchingViewBtn = document.getElementById('pitchingViewBtn');
+           if (pitchingViewBtn) pitchingViewBtn.classList.remove('active');
+           document.getElementById('gameView').style.display = 'block';
+           document.getElementById('songsView').style.display = 'none';
+           document.getElementById('battingOrderView').style.display = 'none';
+           document.getElementById('lineupView').style.display = 'none';
+           const pitchingView = document.getElementById('pitchingView');
+           if (pitchingView) pitchingView.style.display = 'none';
+           renderGameUI();
         });
     }
 

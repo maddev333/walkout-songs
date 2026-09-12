@@ -1633,20 +1633,24 @@ function setupViewToggles() {
     const battingOrderBtn = document.getElementById('battingOrderBtn');
     const lineupBtn = document.getElementById('lineupBtn');
     const gameViewBtn = document.getElementById('gameViewBtn');
+    const pitchingViewBtn = document.getElementById('pitchingViewBtn');
     const songsView = document.getElementById('songsView');
     const battingOrderView = document.getElementById('battingOrderView');
     const lineupView = document.getElementById('lineupView');
     const gameView = document.getElementById('gameView');
+    const pitchingView = document.getElementById('pitchingView');
 
     function showView(activeBtn, viewToShow) {
-        songsViewBtn.classList.toggle('active', activeBtn === songsViewBtn);
-        battingOrderBtn.classList.toggle('active', activeBtn === battingOrderBtn);
-        lineupBtn.classList.toggle('active', activeBtn === lineupBtn);
-        gameViewBtn.classList.toggle('active', activeBtn === gameViewBtn);
-        songsView.style.display = viewToShow === 'songs' ? 'block' : 'none';
-        battingOrderView.style.display = viewToShow === 'batting' ? 'block' : 'none';
-        lineupView.style.display = viewToShow === 'lineup' ? 'block' : 'none';
-        gameView.style.display = viewToShow === 'game' ? 'block' : 'none';
+       songsViewBtn.classList.toggle('active', activeBtn === songsViewBtn);
+       battingOrderBtn.classList.toggle('active', activeBtn === battingOrderBtn);
+       lineupBtn.classList.toggle('active', activeBtn === lineupBtn);
+       gameViewBtn.classList.toggle('active', activeBtn === gameViewBtn);
+       pitchingViewBtn.classList.toggle('active', activeBtn === pitchingViewBtn);
+       songsView.style.display = viewToShow === 'songs' ? 'block' : 'none';
+       battingOrderView.style.display = viewToShow === 'batting' ? 'block' : 'none';
+       lineupView.style.display = viewToShow === 'lineup' ? 'block' : 'none';
+       gameView.style.display = viewToShow === 'game' ? 'block' : 'none';
+       pitchingView.style.display = viewToShow === 'pitching' ? 'block' : 'none';
     }
 
     songsViewBtn.addEventListener('click', () => {
@@ -1667,6 +1671,11 @@ function setupViewToggles() {
         showView(gameViewBtn, 'game');
         localStorage.setItem('walkoutActiveView', 'game');
     });
+    pitchingViewBtn.addEventListener('click', () => {
+       showView(pitchingViewBtn, 'pitching');
+       localStorage.setItem('walkoutActiveView', 'pitching');
+       if (typeof renderPitchingView === 'function') renderPitchingView();
+    });
 
     // Restore last active view
     const savedView = localStorage.getItem('walkoutActiveView');
@@ -1680,6 +1689,10 @@ function setupViewToggles() {
                 renderLineupMatrix();
                 break;
             case 'game': showView(gameViewBtn, 'game'); break;
+          case 'pitching':
+              showView(pitchingViewBtn, 'pitching');
+              if (typeof renderPitchingView === 'function') renderPitchingView();
+              break;
         }
     }
 }

@@ -55,7 +55,7 @@ The lineup is automatically saved to browser storage as you make changes.
 
 🏠 Our Team:  [🏠 Home] [✈️ Visitor]
 ⚾ Opponent:   [Team name] P: [#X Name]
-🏃 Run Rule:   Auto-swap at 4 runs
+🏃 Run Rule:   Auto-swap at 5 runs
 
 [SCOREBOARD showing inning-by-inning scores]
 [DIAMOND with base runners]

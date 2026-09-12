@@ -18,6 +18,7 @@
             <button id="battingOrderBtn" class="view-btn">📋 Batting Order</button>
             <button id="lineupBtn" class="view-btn">⚾ Lineup</button>
             <button id="gameViewBtn" class="view-btn">🏆 Game</button>
+            <button id="pitchingViewBtn" class="view-btn">🎯 Pitching</button>
         </div>
 
                <!-- Global Controls -->
@@ -169,7 +170,7 @@
                 </div>
                 <div class="setup-group">
                     <label class="setup-label">🏃 Run Rule:</label>
-                    <span class="setup-hint">Auto-swap when opponent reaches <strong>4 runs</strong> in a half-inning. Visitors always bat first.</span>
+                    <span class="setup-hint">Auto-swap when opponent reaches <strong>5 runs</strong> in a half-inning. Visitors always bat first.</span>
                 </div>
                 <div class="setup-group">
                     <label class="setup-label">⏭ Inning End:</label>
@@ -335,6 +336,17 @@
                 </div>
             </div>
         </div>
+
+               <!-- Pitching View -->
+               <div class="view-container pitching-view" id="pitchingView" style="display: none;">
+                    <div class="pitching-header">
+                        <h3>🎯 Pitching — Live Pitch Counts</h3>
+                        <p class="pitching-hint">All of our pitchers' pitch counts, updated live. The current pitcher is highlighted.</p>
+                    </div>
+                    <div id="pitchingViewContent" class="pitching-content">
+                        <div class="no-stats">Start a game to see pitch counts.</div>
+                    </div>
+               </div>
 
                <div class="current-player" id="currentPlayer">
             <h2>Now Playing:</h2>
