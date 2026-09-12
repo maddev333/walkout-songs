@@ -743,8 +743,13 @@ function resetCount() {
 
 function processBall() {
     if (!gameState.gameStarted) return;
-    // A ball that doesn't end the at-bat should be undoable, like a strike/walk.
-    if (gameState.count.balls + 1 < 4) pushHistory();
+    // A walk is recorded by processWalk(), which counts the terminal pitch itself.
+    if (gameState.count.balls + 1 >= 4) {
+       processWalk();
+       return;
+    }
+    // A ball that doesn't end the at-bat should be undoable, like a strike.
+    pushHistory();
     gameState.count.balls++;
     gameState.pitchCount++;
     // Count pitches based on which team is pitching
@@ -762,12 +767,6 @@ function processBall() {
         opposingPitchingStats.balls++;
     }
 
-    if (gameState.count.balls >= 4) {
-        // Walk!
-        processWalk();
-        return;
-    }
-
     gameState.gameLog.push(`${getInningLabel()}: Ball ${gameState.count.balls}-${gameState.count.strikes}`);
     saveGameState();
     renderGameUI();
@@ -775,8 +774,13 @@ function processBall() {
 
 function processStrike() {
     if (!gameState.gameStarted) return;
-     // A strike that doesn't end the at-bat should be undoable, like a ball/walk.
-    if (gameState.count.strikes + 1 < 3) pushHistory();
+     // A strikeout is recorded by processStrikeout(), which counts the terminal pitch itself.
+    if (gameState.count.strikes + 1 >= 3) {
+       processStrikeout();
+       return;
+     }
+      // A strike that doesn't end the at-bat should be undoable, like a ball.
+    pushHistory();
     gameState.count.strikes++;
     gameState.pitchCount++;
     gameState.strikeCount++;
@@ -793,12 +797,6 @@ function processStrike() {
     if (!weArePitchingStrike) {
         opposingPitchingStats.pitchesThrown++;
         opposingPitchingStats.strikes++;
-    }
-
-    if (gameState.count.strikes >= 3) {
-        // Strikeout!
-        processStrikeout();
-        return;
     }
 
     gameState.gameLog.push(`${getInningLabel()}: Strike ${gameState.count.balls}-${gameState.count.strikes}`);
