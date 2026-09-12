@@ -2715,6 +2715,17 @@ function renderPitchingView() {
      `;
      }
 
+    // Export buttons (JSON / CSV / PDF) reused on the post-game screen and the full summary.
+    function buildExportButtons() {
+       return `
+         <div class="export-buttons">
+             <button class="export-btn" onclick="exportJSON()">📄 Export JSON</button>
+             <button class="export-btn" onclick="exportCSV()">📊 Export CSV</button>
+             <button class="export-btn" onclick="exportPDF()">🖨 Print / PDF</button>
+         </div>
+     `;
+     }
+
     // Post-game screen shown in the Pitching view after endGame(): final score,
     // the full per-pitcher pitch tally, the opponent pitch count, and a button to
     // start a new game.
@@ -2739,6 +2750,7 @@ function renderPitchingView() {
             ${ended ? `<div class="pitching-gameover-end-time">Ended ${escapeHtml(ended)}</div>` : ''}
             ${buildPitchersTable(false, null, emptyStats)}
             ${buildOpponentBlock()}
+            ${buildExportButtons()}
             ${buildTeamToggle()}
             <button class="game-control-btn primary pitching-controls-start" onclick="startNewGame()">🚀 Start New Game</button>
         </div>
@@ -2825,11 +2837,7 @@ function renderSummary() {
     html += '</div>';
 
     // Export buttons
-    html += '<div class="export-buttons">';
-    html += '<button class="export-btn" onclick="exportJSON()">📄 Export JSON</button>';
-    html += '<button class="export-btn" onclick="exportCSV()">📊 Export CSV</button>';
-    html += '<button class="export-btn" onclick="exportPDF()">🖨 Print / PDF</button>';
-    html += '</div>';
+    html += buildExportButtons();
 
     el.innerHTML = html;
 }
