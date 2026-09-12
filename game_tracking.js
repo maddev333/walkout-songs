@@ -2605,7 +2605,7 @@ function renderPitchingView() {
                 <button class="atbat-btn ball-btn" onclick="processBall()">Ball</button>
                 <button class="atbat-btn strike-btn" onclick="processStrike()">Strike</button>
                 <button class="atbat-btn foul-btn" onclick="processFoul()">Foul</button>
-                <button class="reset-count-btn" onclick="resetCount(); renderGameUI();">↺ Reset</button>
+                <button class="reset-count-btn" onclick="undo()">↩ Undo</button>
             </div>
             <div class="atbat-group outcome-group">
                 <button class="atbat-btn hit-btn" onclick="processAtBatAction('single')">1B</button>
